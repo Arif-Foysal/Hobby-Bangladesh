@@ -11,9 +11,11 @@ import { IconShoppingBag } from "@tabler/icons-react";
 export function BuyNowButton({
   productId,
   stockQty,
+  quantity = 1,
 }: {
   productId: string;
   stockQty: number;
+  quantity?: number;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -26,9 +28,9 @@ export function BuyNowButton({
     const isLoggedIn = !!authData?.claims;
 
     if (isLoggedIn) {
-      await addToCart(productId);
+      await addToCart(productId, quantity);
     } else {
-      addToGuestCart(productId);
+      addToGuestCart(productId, quantity);
     }
 
     router.push("/checkout");

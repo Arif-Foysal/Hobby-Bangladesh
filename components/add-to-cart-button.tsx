@@ -10,9 +10,11 @@ import { IconShoppingCart, IconCheck } from "@tabler/icons-react";
 export function AddToCartButton({
   productId,
   stockQty,
+  quantity = 1,
 }: {
   productId: string;
   stockQty: number;
+  quantity?: number;
 }) {
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -29,12 +31,12 @@ export function AddToCartButton({
     setLoading(true);
 
     if (isLoggedIn) {
-      const result = await addToCart(productId);
+      const result = await addToCart(productId, quantity);
       setLoading(false);
 
       if (result.error) return;
     } else {
-      addToGuestCart(productId);
+      addToGuestCart(productId, quantity);
       setLoading(false);
     }
 

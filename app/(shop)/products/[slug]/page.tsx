@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProductBySlug } from "../actions";
 import { ProductGallery } from "@/components/product-gallery";
-import { AddToCartButton } from "@/components/add-to-cart-button";
-import { BuyNowButton } from "@/components/buy-now-button";
+import { ProductActions } from "@/components/product-actions";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { IconChevronRight } from "@tabler/icons-react";
@@ -98,10 +97,7 @@ export default async function ProductDetailPage({
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <AddToCartButton productId={product.id} stockQty={product.stock_qty} />
-            <BuyNowButton productId={product.id} stockQty={product.stock_qty} />
-          </div>
+          <ProductActions productId={product.id} stockQty={product.stock_qty} />
 
           {product.sku && (
             <p className="text-xs text-muted-foreground">
