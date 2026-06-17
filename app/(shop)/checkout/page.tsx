@@ -1,57 +1,23 @@
-import { createClient } from "@/lib/supabase/server";
-import { getCheckoutData } from "./actions";
-import { CheckoutForm } from "./checkout-form";
-import { CheckoutAuthPrompt } from "./auth-prompt";
+import { getStoreSetting } from "@/lib/supabase/store";
+import { CheckoutContent } from "./checkout-content";
 
 export const metadata = {
   title: "Checkout | Hobby Bangladesh",
 };
 
 export default async function CheckoutPage() {
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  const isLoggedIn = !!authData?.claims;
-
-  if (!isLoggedIn) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
-        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
-        <p className="text-muted-foreground">Complete your order.</p>
-        <CheckoutAuthPrompt />
-      </div>
-    );
-  }
-
-  const data = await getCheckoutData();
-  if ("error" in data) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
-        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
-        <p className="mt-4 text-muted-foreground">Your cart is empty.</p>
-      </div>
-    );
-  }
-
-  if (data.cart.length === 0) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
-        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
-        <p className="mt-4 text-muted-foreground">Your cart is empty.</p>
-      </div>
-    );
-  }
+  const shipping = (await getStoreSetting("shipping")) as {
+    inside_dhaka: number;
+    outside_dhaka: number;
+    free_shipping_min: number;
+  } | null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
       <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
       <p className="text-muted-foreground">Complete your order.</p>
-
       <div className="mt-8">
-        <CheckoutForm
-          cart={data.cart}
-          addresses={data.addresses}
-          shipping={data.shipping as { inside_dhaka: number; outside_dhaka: number; free_shipping_min: number } | null}
-        />
+        <CheckoutContent shipping={shipping} />
       </div>
     </div>
   );

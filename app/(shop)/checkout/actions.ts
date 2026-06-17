@@ -2,57 +2,39 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { clearCart } from "@/app/cart/actions";
 import { getStoreSetting } from "@/lib/supabase/store";
-
-export async function getCheckoutData() {
-  const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  if (!authData?.claims) return { error: "Not authenticated" };
-
-  const userId = authData.claims.sub;
-
-  const [cartResult, addressesResult, profileResult, shippingResult] =
-    await Promise.all([
-      supabase
-        .from("carts")
-        .select("*, products(id, name, slug, price, images, stock_qty, is_active)")
-        .eq("user_id", userId),
-      supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", userId)
-        .order("is_default", { ascending: false }),
-      supabase.from("profiles").select("*").eq("id", userId).single(),
-      getStoreSetting("shipping"),
-    ]);
-
-  return {
-    cart: cartResult.data || [],
-    addresses: addressesResult.data || [],
-    profile: profileResult.data,
-    shipping: shippingResult,
-  };
-}
 
 export async function createOrder(formData: FormData) {
   const supabase = await createClient();
-  const { data: authData } = await supabase.auth.getClaims();
-  if (!authData?.claims) return { error: "Not authenticated" };
 
-  const userId = authData.claims.sub;
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const phone = formData.get("phone") as string;
+  const division = formData.get("division") as string;
+  const city = formData.get("city") as string;
+  const area = formData.get("area") as string;
+  const address = formData.get("address") as string;
+  const paymentMethod = formData.get("payment_method") as string;
+  const notes = formData.get("notes") as string;
+  const cartItemsJson = formData.get("cart_items") as string;
 
-  const cart = await supabase
-    .from("carts")
-    .select("*, products(id, name, price, stock_qty, is_active)")
-    .eq("user_id", userId);
+  if (!cartItemsJson) return { error: "Cart is empty" };
 
-  if (!cart.data || cart.data.length === 0) {
-    return { error: "Cart is empty" };
-  }
+  const cartItems: { productId: string; quantity: number }[] = JSON.parse(cartItemsJson);
+  if (cartItems.length === 0) return { error: "Cart is empty" };
 
-  for (const item of cart.data) {
-    const product = item.products;
+  const productIds = cartItems.map((item) => item.productId);
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, name, price, stock_qty, is_active")
+    .in("id", productIds);
+
+  if (!products) return { error: "Could not fetch products" };
+
+  const productMap = new Map(products.map((p) => [p.id, p]));
+
+  for (const item of cartItems) {
+    const product = productMap.get(item.productId);
     if (!product || !product.is_active) {
       return { error: `${product?.name ?? "A product"} is no longer available` };
     }
@@ -61,21 +43,14 @@ export async function createOrder(formData: FormData) {
     }
   }
 
-  const name = formData.get("name") as string;
-  const phone = formData.get("phone") as string;
-  const division = formData.get("division") as string;
-  const city = formData.get("city") as string;
-  const area = formData.get("area") as string;
-  const address = formData.get("address") as string;
-  const paymentMethod = formData.get("payment_method") as string;
-  const notes = formData.get("notes") as string;
-  const saveAddress = formData.get("save_address") === "on";
+  const { data: authData } = await supabase.auth.getClaims();
+  const userId = authData?.claims?.sub ?? null;
 
   const shippingConfig = await getStoreSetting("shipping");
-  const subtotal = cart.data.reduce(
-    (sum, item) => sum + (item.products?.price ?? 0) * item.quantity,
-    0
-  );
+  const subtotal = cartItems.reduce((sum, item) => {
+    const product = productMap.get(item.productId);
+    return sum + (product?.price ?? 0) * item.quantity;
+  }, 0);
   const shippingCost =
     shippingConfig && subtotal >= (shippingConfig.free_shipping_min ?? 5000)
       ? 0
@@ -84,7 +59,7 @@ export async function createOrder(formData: FormData) {
 
   const orderNumber = `HB-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
-  const shippingAddress = { name, phone, division, city, area, address };
+  const shippingAddress = { name, email, phone, division, city, area, address };
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -106,44 +81,31 @@ export async function createOrder(formData: FormData) {
 
   if (orderError) return { error: orderError.message };
 
-  const orderItems = cart.data.map((item) => ({
-    order_id: order.id,
-    product_id: item.product_id,
-    product_name: item.products?.name ?? "Unknown",
-    quantity: item.quantity,
-    unit_price: item.products?.price ?? 0,
-    total: (item.products?.price ?? 0) * item.quantity,
-  }));
+  const orderItems = cartItems.map((item) => {
+    const product = productMap.get(item.productId);
+    return {
+      order_id: order.id,
+      product_id: item.productId,
+      product_name: product?.name ?? "Unknown",
+      quantity: item.quantity,
+      unit_price: product?.price ?? 0,
+      total: (product?.price ?? 0) * item.quantity,
+    };
+  });
 
   await supabase.from("order_items").insert(orderItems);
 
-  for (const item of cart.data) {
-    await supabase
-      .from("products")
-      .update({
-        stock_qty: (item.products?.stock_qty ?? 0) - item.quantity,
-        sold_count: item.quantity,
-      })
-      .eq("id", item.product_id);
-  }
-
-  await clearCart();
-
-  if (saveAddress) {
-    await supabase.from("addresses").upsert(
-      {
-        user_id: userId,
-        label: "Home",
-        name,
-        phone,
-        division,
-        city,
-        area,
-        address,
-        is_default: true,
-      },
-      { onConflict: "user_id,label" }
-    );
+  for (const item of cartItems) {
+    const product = productMap.get(item.productId);
+    if (product) {
+      await supabase
+        .from("products")
+        .update({
+          stock_qty: product.stock_qty - item.quantity,
+          sold_count: item.quantity,
+        })
+        .eq("id", item.productId);
+    }
   }
 
   revalidatePath("/cart");

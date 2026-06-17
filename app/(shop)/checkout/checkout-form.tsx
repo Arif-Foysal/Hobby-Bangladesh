@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -16,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { createOrder } from "./actions";
+import { clearGuestCart } from "@/lib/cart";
 import { IconCreditCard, IconBuildingBank } from "@tabler/icons-react";
 
 const divisions = [
@@ -32,44 +33,24 @@ const divisions = [
 ];
 
 export function CheckoutForm({
-  cart,
-  addresses,
+  cartItems,
   shipping,
 }: {
-  cart: {
-    id: string;
+  cartItems: {
+    productId: string;
     quantity: number;
-    products: {
-      id: string;
-      name: string;
-      price: number;
-      images: { url: string }[];
-    } | null;
-  }[];
-  addresses: {
-    id: string;
     name: string;
-    phone: string;
-    division: string;
-    city: string;
-    area: string;
-    address: string;
-    is_default: boolean;
+    price: number;
+    image: string | null;
   }[];
   shipping: { inside_dhaka: number; outside_dhaka: number; free_shipping_min: number } | null;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<string>("new");
   const [paymentMethod, setPaymentMethod] = useState<string>("sslcommerz");
 
-  const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
-
-  const subtotal = cart.reduce(
-    (sum, item) => sum + (item.products?.price ?? 0) * item.quantity,
-    0
-  );
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCost =
     shipping && subtotal >= shipping.free_shipping_min ? 0 : shipping?.inside_dhaka ?? 60;
   const total = subtotal + shippingCost;
@@ -80,15 +61,16 @@ export function CheckoutForm({
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    if (selectedAddress !== "new" && defaultAddr) {
-      formData.set("name", defaultAddr.name);
-      formData.set("phone", defaultAddr.phone);
-      formData.set("division", defaultAddr.division);
-      formData.set("city", defaultAddr.city);
-      formData.set("area", defaultAddr.area);
-      formData.set("address", defaultAddr.address);
-    }
     formData.set("payment_method", paymentMethod);
+    formData.set(
+      "cart_items",
+      JSON.stringify(
+        cartItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }))
+      )
+    );
 
     const result = await createOrder(formData);
 
@@ -98,6 +80,7 @@ export function CheckoutForm({
       return;
     }
 
+    clearGuestCart();
     router.push(`/checkout/success?order=${result.orderNumber}`);
   };
 
@@ -105,111 +88,87 @@ export function CheckoutForm({
     <form onSubmit={handleSubmit}>
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-sm font-medium">Shipping Address</h3>
-            {addresses.length > 0 && (
-              <div className="mb-4 flex flex-col gap-2">
-                {defaultAddr && (
-                  <label
-                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                      selectedAddress === "saved"
-                        ? "border-primary bg-primary/5"
-                        : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="address_choice"
-                      value="saved"
-                      checked={selectedAddress === "saved"}
-                      onChange={() => setSelectedAddress("saved")}
-                      className="mt-1"
-                    />
-                    <div className="text-sm">
-                      <p className="font-medium">{defaultAddr.name}</p>
-                      <p className="text-muted-foreground">
-                        {defaultAddr.address}, {defaultAddr.area}, {defaultAddr.city},{" "}
-                        {defaultAddr.division}
-                      </p>
-                      <p className="text-muted-foreground">{defaultAddr.phone}</p>
-                      {defaultAddr.is_default && (
-                        <Badge variant="secondary" className="mt-1">Default</Badge>
-                      )}
-                    </div>
-                  </label>
-                )}
-                <label
-                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                    selectedAddress === "new"
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="address_choice"
-                    value="new"
-                    checked={selectedAddress === "new"}
-                    onChange={() => setSelectedAddress("new")}
-                    className="mt-1"
-                  />
-                  <span className="text-sm font-medium">Use a new address</span>
-                </label>
+          {/* Contact Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Contact Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" name="name" required placeholder="Your name" />
               </div>
-            )}
-
-            {selectedAddress === "new" && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" name="name" required />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" name="phone" required placeholder="+880..." />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>Division</Label>
-                  <Select name="division" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select division" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {divisions.map((d) => (
-                          <SelectItem key={d} value={d}>
-                            {d}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input id="city" name="city" required />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="area">Area</Label>
-                  <Input id="area" name="area" required />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input id="address" name="address" required placeholder="House, street, etc." />
-                </div>
-                <div className="flex items-center gap-2 sm:col-span-2">
-                  <Switch id="save_address" name="save_address" />
-                  <Label htmlFor="save_address" className="cursor-pointer text-sm">
-                    Save this address for future orders
-                  </Label>
-                </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="you@example.com"
+                />
               </div>
-            )}
-          </div>
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  required
+                  placeholder="+880..."
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-sm font-medium">Payment Method</h3>
-            <div className="flex flex-col gap-2">
+          {/* Shipping Address */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Shipping Address</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <Label>Division</Label>
+                <Select name="division" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select division" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {divisions.map((d) => (
+                        <SelectItem key={d} value={d}>
+                          {d}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" name="city" required placeholder="City" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="area">Area</Label>
+                <Input id="area" name="area" required placeholder="Area / Thana" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  required
+                  placeholder="House, street, etc."
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Method */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Payment Method</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
               <label
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
                   paymentMethod === "sslcommerz"
@@ -252,31 +211,52 @@ export function CheckoutForm({
                   <p className="text-xs text-muted-foreground">Pay when you receive</p>
                 </div>
               </label>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-sm font-medium">Order Notes (Optional)</h3>
-            <Textarea name="notes" placeholder="Any special instructions..." rows={3} />
-          </div>
+          {/* Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Order Notes (Optional)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea name="notes" placeholder="Any special instructions..." rows={3} />
+            </CardContent>
+          </Card>
         </div>
 
+        {/* Order Summary */}
         <div>
-          <div className="sticky top-4 rounded-lg border p-4">
-            <h3 className="mb-4 text-sm font-medium">Order Summary</h3>
-            <div className="flex flex-col gap-3">
-              {cart.map((item) => {
-                const product = item.products;
-                if (!product) return null;
-                return (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {product.name} x{item.quantity}
-                    </span>
-                    <span>৳ {(product.price * item.quantity).toLocaleString()}</span>
+          <Card className="sticky top-20">
+            <CardHeader>
+              <CardTitle className="text-sm">Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {cartItems.map((item) => (
+                <div key={item.productId} className="flex items-center gap-3">
+                  <div className="relative size-12 shrink-0 overflow-hidden rounded-md bg-muted">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-[10px] text-muted-foreground">
+                        N/A
+                      </div>
+                    )}
                   </div>
-                );
-              })}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium leading-tight">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                  </div>
+                  <span className="text-sm font-medium">
+                    ৳ {(item.price * item.quantity).toLocaleString()}
+                  </span>
+                </div>
+              ))}
               <Separator />
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
@@ -291,18 +271,20 @@ export function CheckoutForm({
                 <span>Total</span>
                 <span>৳ {total.toLocaleString()}</span>
               </div>
-            </div>
+            </CardContent>
 
             {error && (
-              <p className="mt-3 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
+              <div className="mx-4 mb-4 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
                 {error}
-              </p>
+              </div>
             )}
 
-            <Button type="submit" size="lg" className="mt-4 w-full" disabled={loading}>
-              {loading ? "Placing Order..." : "Place Order"}
-            </Button>
-          </div>
+            <div className="p-4 pt-0">
+              <Button type="submit" size="lg" className="w-full" disabled={loading}>
+                {loading ? "Placing Order..." : "Place Order"}
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
     </form>
