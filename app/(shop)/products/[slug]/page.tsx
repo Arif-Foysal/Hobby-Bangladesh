@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getProductBySlug } from "../actions";
 import { ProductGallery } from "@/components/product-gallery";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { BuyNowButton } from "@/components/buy-now-button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { IconChevronRight } from "@tabler/icons-react";
@@ -99,6 +100,7 @@ export default async function ProductDetailPage({
 
           <div className="flex gap-3 pt-2">
             <AddToCartButton productId={product.id} stockQty={product.stock_qty} />
+            <BuyNowButton productId={product.id} stockQty={product.stock_qty} />
           </div>
 
           {product.sku && (
