@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -17,7 +16,6 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/admin";
 import {
-  IconShoppingCart,
   IconUserCircle,
   IconLogin,
   IconPackage,
@@ -25,6 +23,7 @@ import {
   IconLogout,
 } from "@tabler/icons-react";
 import { SiteThemeToggle } from "./site-theme-toggle";
+import { CartButton } from "./cart-button";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -68,20 +67,7 @@ export async function SiteHeader() {
         <div className="flex items-center gap-1">
           <SiteThemeToggle />
 
-          <Button variant="ghost" size="icon" asChild className="relative">
-            <Link href="/cart">
-              <IconShoppingCart className="size-5" />
-              {cartCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full p-0 text-[10px]"
-                >
-                  {cartCount > 99 ? "99+" : cartCount}
-                </Badge>
-              )}
-              <span className="sr-only">Cart</span>
-            </Link>
-          </Button>
+          <CartButton serverCartCount={cartCount} />
 
           {isLoggedIn ? (
             <DropdownMenu>

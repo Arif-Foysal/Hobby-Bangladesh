@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { addToCart } from "@/app/cart/actions";
+import { addToGuestCart } from "@/lib/cart";
+import { createClient } from "@/lib/supabase/client";
 import { IconShoppingCart, IconCheck } from "@tabler/icons-react";
 
 export function AddToCartButton({
@@ -13,20 +14,28 @@ export function AddToCartButton({
   productId: string;
   stockQty: number;
 }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getClaims().then(({ data }) => {
+      setIsLoggedIn(!!data?.claims);
+    });
+  }, []);
 
   const handleAdd = async () => {
     setLoading(true);
-    const result = await addToCart(productId);
-    setLoading(false);
 
-    if (result.error) {
-      if (result.error === "Not authenticated") {
-        router.push("/auth/login");
-      }
-      return;
+    if (isLoggedIn) {
+      const result = await addToCart(productId);
+      setLoading(false);
+
+      if (result.error) return;
+    } else {
+      addToGuestCart(productId);
+      setLoading(false);
     }
 
     setAdded(true);

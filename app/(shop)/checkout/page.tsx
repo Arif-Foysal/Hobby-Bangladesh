@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCheckoutData } from "./actions";
 import { CheckoutForm } from "./checkout-form";
+import { CheckoutAuthPrompt } from "./auth-prompt";
 
 export const metadata = {
   title: "Checkout | Hobby Bangladesh",
@@ -10,12 +10,36 @@ export const metadata = {
 export default async function CheckoutPage() {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
-  if (!authData?.claims) redirect("/auth/login");
+  const isLoggedIn = !!authData?.claims;
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
+        <p className="text-muted-foreground">Complete your order.</p>
+        <CheckoutAuthPrompt />
+      </div>
+    );
+  }
 
   const data = await getCheckoutData();
-  if ("error" in data) redirect("/cart");
+  if ("error" in data) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
+        <p className="mt-4 text-muted-foreground">Your cart is empty.</p>
+      </div>
+    );
+  }
 
-  if (data.cart.length === 0) redirect("/cart");
+  if (data.cart.length === 0) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+        <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
+        <p className="mt-4 text-muted-foreground">Your cart is empty.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
