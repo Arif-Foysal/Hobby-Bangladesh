@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { IconSearch } from "@tabler/icons-react";
 import {
@@ -28,17 +29,31 @@ export function ProductFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const updateParam = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const updateParam = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      params.delete("page");
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams]
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        updateParam("search", value);
+      }, 300);
+    },
+    [updateParam]
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,7 +63,7 @@ export function ProductFilters({
           placeholder="Search products..."
           className="pl-9"
           defaultValue={currentSearch}
-          onChange={(e) => updateParam("search", e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
       </div>
 

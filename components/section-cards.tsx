@@ -1,102 +1,149 @@
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
-
-import { Badge } from "@/components/ui/badge"
+import { IconTrendingDown, IconTrendingUp, IconCurrencyTaka, IconShoppingCart, IconPackage } from "@tabler/icons-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server";
 
-export function SectionCards() {
+async function getDashboardStats() {
+  const supabase = await createClient();
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
+
+  const [revenueResult, ordersTodayResult, pendingResult, productsResult, lastMonthRevenueResult, customersResult] =
+    await Promise.all([
+      supabase
+        .from("orders")
+        .select("total")
+        .eq("payment_status", "paid")
+        .gte("created_at", monthStart),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayStart),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["pending", "confirmed"]),
+      supabase
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .eq("is_active", true),
+      supabase
+        .from("orders")
+        .select("total")
+        .eq("payment_status", "paid")
+        .gte("created_at", lastMonthStart)
+        .lte("created_at", lastMonthEnd),
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "customer"),
+    ]);
+
+  const monthRevenue = (revenueResult.data || []).reduce((sum, o) => sum + o.total, 0);
+  const lastMonthRevenue = (lastMonthRevenueResult.data || []).reduce((sum, o) => sum + o.total, 0);
+  const revenueChange = lastMonthRevenue > 0
+    ? ((monthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1)
+    : monthRevenue > 0 ? "100" : "0";
+
+  return {
+    monthRevenue,
+    ordersToday: ordersTodayResult.count || 0,
+    pendingOrders: pendingResult.count || 0,
+    activeProducts: productsResult.count || 0,
+    customers: customersResult.count || 0,
+    revenueChange: parseFloat(revenueChange),
+  };
+}
+
+export async function SectionCards() {
+  const stats = await getDashboardStats();
+
   return (
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Revenue (This Month)</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            ৳ {stats.monthRevenue.toLocaleString()}
           </CardTitle>
-          <CardAction>
+          {stats.revenueChange !== 0 && (
             <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
+              {stats.revenueChange > 0 ? <IconTrendingUp /> : <IconTrendingDown />}
+              {stats.revenueChange > 0 ? "+" : ""}{stats.revenueChange}%
             </Badge>
-          </CardAction>
+          )}
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <IconTrendingUp className="size-4" />
+            {stats.revenueChange >= 0 ? "Trending up" : "Trending down"} <IconTrendingUp className="size-4" />
           </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
+          <div className="text-muted-foreground">vs last month</div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>Orders Today</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
+            {stats.ordersToday}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingDown />
-              -20%
-            </Badge>
-          </CardAction>
+          <Badge variant="outline">
+            <IconShoppingCart />
+          </Badge>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <IconTrendingDown className="size-4" />
+            New orders today
           </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
+          <div className="text-muted-foreground">{stats.pendingOrders} pending</div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Active Products</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            {stats.activeProducts}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +12.5%
-            </Badge>
-          </CardAction>
+          <Badge variant="outline">
+            <IconPackage />
+          </Badge>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <IconTrendingUp className="size-4" />
+            In catalog
           </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
+          <div className="text-muted-foreground">Visible to customers</div>
         </CardFooter>
       </Card>
+
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Customers</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
+            {stats.customers}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconTrendingUp />
-              +4.5%
-            </Badge>
-          </CardAction>
+          <Badge variant="outline">
+            <IconCurrencyTaka />
+          </Badge>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase <IconTrendingUp className="size-4" />
+            Registered users
           </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
+          <div className="text-muted-foreground">Total accounts</div>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

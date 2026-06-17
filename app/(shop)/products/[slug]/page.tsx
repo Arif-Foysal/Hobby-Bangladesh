@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getProductBySlug } from "../actions";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductActions } from "@/components/product-actions";
+import { RelatedProducts } from "@/components/related-products";
+import { ProductReviews } from "@/components/product-reviews";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { IconChevronRight } from "@tabler/icons-react";
@@ -106,6 +108,9 @@ export default async function ProductDetailPage({
           )}
         </div>
       </div>
+
+      <ProductReviews productId={product.id} />
+      <RelatedProducts categoryId={product.category_id} currentProductId={product.id} />
     </div>
   );
 }

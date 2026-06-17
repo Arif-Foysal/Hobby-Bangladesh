@@ -6,6 +6,7 @@ import { addToCart } from "@/app/cart/actions";
 import { addToGuestCart } from "@/lib/cart";
 import { createClient } from "@/lib/supabase/client";
 import { IconShoppingCart, IconCheck } from "@tabler/icons-react";
+import { toast } from "sonner";
 
 export function AddToCartButton({
   productId,
@@ -34,12 +35,16 @@ export function AddToCartButton({
       const result = await addToCart(productId, quantity);
       setLoading(false);
 
-      if (result.error) return;
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
     } else {
       addToGuestCart(productId, quantity);
       setLoading(false);
     }
 
+    toast.success("Added to cart");
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };

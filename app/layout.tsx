@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -10,8 +11,19 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Hobby Bangladesh",
+  title: {
+    default: "Hobby Bangladesh",
+    template: "%s | Hobby Bangladesh",
+  },
   description: "Your destination for hobby products in Bangladesh",
+  openGraph: {
+    title: "Hobby Bangladesh",
+    description: "Your destination for hobby products in Bangladesh",
+    url: defaultUrl,
+    siteName: "Hobby Bangladesh",
+    locale: "en_BD",
+    type: "website",
+  },
 };
 
 const geistSans = Geist({
@@ -35,6 +47,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster position="bottom-right" />
         </ThemeProvider>
       </body>
     </html>

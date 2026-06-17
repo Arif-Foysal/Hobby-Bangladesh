@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getMyAddresses } from "@/app/account/actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { IconMapPin } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
+import { IconMapPin, IconPlus } from "@tabler/icons-react";
 import { DeleteAddressButton } from "./delete-button";
 
 export const metadata = { title: "Addresses | Hobby Bangladesh" };
@@ -19,14 +21,23 @@ export default async function AddressesPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Addresses</h2>
+        <Button asChild size="sm">
+          <Link href="/account/addresses/new">
+            <IconPlus />
+            Add Address
+          </Link>
+        </Button>
       </div>
 
       {addresses.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-12 text-center">
           <IconMapPin className="size-12 text-muted-foreground" />
           <p className="text-muted-foreground">
-            No saved addresses. Addresses will be saved during checkout.
+            No saved addresses. Add one to speed up checkout.
           </p>
+          <Button asChild>
+            <Link href="/account/addresses/new">Add Address</Link>
+          </Button>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">

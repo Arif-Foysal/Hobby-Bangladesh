@@ -7,6 +7,7 @@ import { addToGuestCart } from "@/lib/cart";
 import { addToCart } from "@/app/cart/actions";
 import { createClient } from "@/lib/supabase/client";
 import { IconShoppingBag } from "@tabler/icons-react";
+import { toast } from "sonner";
 
 export function BuyNowButton({
   productId,
@@ -28,7 +29,12 @@ export function BuyNowButton({
     const isLoggedIn = !!authData?.claims;
 
     if (isLoggedIn) {
-      await addToCart(productId, quantity);
+      const result = await addToCart(productId, quantity);
+      if (result.error) {
+        toast.error(result.error);
+        setLoading(false);
+        return;
+      }
     } else {
       addToGuestCart(productId, quantity);
     }
