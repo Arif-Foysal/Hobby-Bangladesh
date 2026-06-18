@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { saveStoreInfo } from "./actions";
+import { toast } from "sonner";
 
 export function StoreInfoForm({
   initialData,
@@ -19,8 +20,9 @@ export function StoreInfoForm({
     e.preventDefault();
     setSaving(true);
     const formData = new FormData(e.currentTarget);
-    await saveStoreInfo(formData);
+    const result = await saveStoreInfo(formData);
     setSaving(false);
+    if (result.success) toast.success("Store info saved");
   };
 
   return (

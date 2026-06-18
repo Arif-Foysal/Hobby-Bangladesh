@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function getCategories() {
@@ -13,6 +14,63 @@ export async function getCategories() {
 
   if (error) throw error;
   return data;
+}
+
+export async function getAdminCategories({
+  search,
+  status,
+  sort = "sort_order",
+  page = 1,
+  perPage = 50,
+}: {
+  search?: string;
+  status?: string;
+  sort?: string;
+  page?: number;
+  perPage?: number;
+}) {
+  const supabase = await createClient();
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  let query = supabase
+    .from("categories")
+    .select("*, parent:parent_id(name)", { count: "exact" });
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,slug.ilike.%${search}%`);
+  }
+
+  if (status === "active") {
+    query = query.eq("is_active", true);
+  } else if (status === "inactive") {
+    query = query.eq("is_active", false);
+  }
+
+  switch (sort) {
+    case "name_asc":
+      query = query.order("name", { ascending: true });
+      break;
+    case "name_desc":
+      query = query.order("name", { ascending: false });
+      break;
+    case "newest":
+      query = query.order("created_at", { ascending: false });
+      break;
+    default:
+      query = query.order("sort_order", { ascending: true }).order("name", { ascending: true });
+  }
+
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
+  if (error) throw error;
+
+  return {
+    categories: data || [],
+    total: count || 0,
+    totalPages: Math.ceil((count || 0) / perPage),
+  };
 }
 
 export async function getCategory(id: string) {
@@ -28,6 +86,7 @@ export async function getCategory(id: string) {
 }
 
 export async function createCategory(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const name = formData.get("name") as string;
@@ -60,6 +119,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(id: string, formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const name = formData.get("name") as string;
@@ -95,6 +155,7 @@ export async function updateCategory(id: string, formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", id);
 
@@ -105,6 +166,7 @@ export async function deleteCategory(id: string) {
 }
 
 export async function toggleCategoryActive(id: string, isActive: boolean) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase
     .from("categories")
@@ -118,6 +180,7 @@ export async function toggleCategoryActive(id: string, isActive: boolean) {
 }
 
 export async function uploadCategoryImage(file: File) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const ext = file.name.split(".").pop();

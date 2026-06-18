@@ -10,7 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAllOrders } from "../../account/actions";
+import { getAdminOrders } from "./actions";
+import { DataTableToolbar } from "@/components/admin/data-table-toolbar";
+import { DataTablePagination } from "@/components/admin/data-table-pagination";
 import { IconEye } from "@tabler/icons-react";
 
 export const metadata = { title: "Orders | Admin | Hobby Bangladesh" };
@@ -24,14 +26,75 @@ const statusColors: Record<string, string> = {
   cancelled: "destructive",
 };
 
-export default async function AdminOrdersPage() {
-  const orders = await getAllOrders();
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const search = typeof params.search === "string" ? params.search : undefined;
+  const status = typeof params.status === "string" ? params.status : undefined;
+  const paymentStatus = typeof params.paymentStatus === "string" ? params.paymentStatus : undefined;
+  const sort = typeof params.sort === "string" ? params.sort : "newest";
+  const page = typeof params.page === "string" ? parseInt(params.page) : 1;
+  const perPage = typeof params.perPage === "string" ? parseInt(params.perPage) : 20;
+
+  const { orders, total, totalPages } = await getAdminOrders({
+    search,
+    status,
+    paymentStatus,
+    sort,
+    page,
+    perPage,
+  });
 
   return (
     <>
       <div className="px-4 lg:px-6">
         <h2 className="text-2xl font-bold tracking-tight">Orders</h2>
-        <p className="text-muted-foreground">Manage customer orders.</p>
+        <p className="text-muted-foreground">
+          {total} order{total !== 1 ? "s" : ""} total.
+        </p>
+      </div>
+
+      <div className="px-4 lg:px-6">
+        <DataTableToolbar
+          searchPlaceholder="Search by order # or customer..."
+          filters={[
+            {
+              key: "status",
+              label: "Status",
+              options: [
+                { label: "Pending", value: "pending" },
+                { label: "Confirmed", value: "confirmed" },
+                { label: "Processing", value: "processing" },
+                { label: "Shipped", value: "shipped" },
+                { label: "Delivered", value: "delivered" },
+                { label: "Cancelled", value: "cancelled" },
+              ],
+            },
+            {
+              key: "paymentStatus",
+              label: "Payment",
+              options: [
+                { label: "Unpaid", value: "unpaid" },
+                { label: "Paid", value: "paid" },
+                { label: "Refunded", value: "refunded" },
+                { label: "Failed", value: "failed" },
+              ],
+            },
+            {
+              key: "sort",
+              label: "Sort",
+              options: [
+                { label: "Newest First", value: "newest" },
+                { label: "Oldest First", value: "oldest" },
+                { label: "Total: High → Low", value: "total_desc" },
+                { label: "Total: Low → High", value: "total_asc" },
+              ],
+            },
+          ]}
+        />
       </div>
 
       <Card className="mx-4 lg:mx-6">
@@ -52,7 +115,7 @@ export default async function AdminOrdersPage() {
               {orders.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                    No orders yet.
+                    {search ? "No orders match your search." : "No orders yet."}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -83,7 +146,7 @@ export default async function AdminOrdersPage() {
                     <TableCell>
                       <Button variant="ghost" size="icon" asChild>
                         <Link href={`/admin/orders/${order.id}`}>
-                          <IconEye />
+                          <IconEye className="size-4" />
                         </Link>
                       </Button>
                     </TableCell>
@@ -94,6 +157,12 @@ export default async function AdminOrdersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="px-4 lg:px-6">
+          <DataTablePagination totalPages={totalPages} totalItems={total} />
+        </div>
+      )}
     </>
   );
 }

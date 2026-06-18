@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { saveCurrency } from "./actions";
+import { toast } from "sonner";
 
 export function CurrencyForm({
   initialData,
@@ -25,8 +26,9 @@ export function CurrencyForm({
     e.preventDefault();
     setSaving(true);
     const formData = new FormData(e.currentTarget);
-    await saveCurrency(formData);
+    const result = await saveCurrency(formData);
     setSaving(false);
+    if (result.success) toast.success("Currency settings saved");
   };
 
   return (

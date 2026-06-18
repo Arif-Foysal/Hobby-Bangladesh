@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
+import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export async function getProducts() {
@@ -12,6 +14,78 @@ export async function getProducts() {
 
   if (error) throw error;
   return data;
+}
+
+export async function getAdminProducts({
+  search,
+  status,
+  category,
+  sort = "newest",
+  page = 1,
+  perPage = 20,
+}: {
+  search?: string;
+  status?: string;
+  category?: string;
+  sort?: string;
+  page?: number;
+  perPage?: number;
+}) {
+  const supabase = await createClient();
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+
+  let query = supabase
+    .from("products")
+    .select("*, categories(name, slug)", { count: "exact" });
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,slug.ilike.%${search}%`);
+  }
+
+  if (status === "active") {
+    query = query.eq("is_active", true);
+  } else if (status === "inactive") {
+    query = query.eq("is_active", false);
+  }
+
+  if (category && category !== "all") {
+    query = query.eq("category_id", category);
+  }
+
+  switch (sort) {
+    case "price_asc":
+      query = query.order("price", { ascending: true });
+      break;
+    case "price_desc":
+      query = query.order("price", { ascending: false });
+      break;
+    case "name_asc":
+      query = query.order("name", { ascending: true });
+      break;
+    case "name_desc":
+      query = query.order("name", { ascending: false });
+      break;
+    case "stock_asc":
+      query = query.order("stock_qty", { ascending: true });
+      break;
+    case "oldest":
+      query = query.order("created_at", { ascending: true });
+      break;
+    default:
+      query = query.order("created_at", { ascending: false });
+  }
+
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
+  if (error) throw error;
+
+  return {
+    products: data || [],
+    total: count || 0,
+    totalPages: Math.ceil((count || 0) / perPage),
+  };
 }
 
 export async function getProduct(id: string) {
@@ -72,8 +146,11 @@ export async function getProductsForListing({
     }
   }
 
+  // Search across name, short_desc, and description
   if (search) {
-    query = query.ilike("name", `%${search}%`);
+    query = query.or(
+      `name.ilike.%${search}%,short_desc.ilike.%${search}%,description.ilike.%${search}%`
+    );
   }
 
   switch (sort) {
@@ -90,6 +167,11 @@ export async function getProductsForListing({
       query = query.order("created_at", { ascending: false });
   }
 
+  // Push popular results higher when there's a search
+  if (search) {
+    query = query.order("sold_count", { ascending: false });
+  }
+
   query = query.range(from, to);
 
   const { data, error, count } = await query;
@@ -99,6 +181,7 @@ export async function getProductsForListing({
 }
 
 export async function createProduct(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const name = formData.get("name") as string;
@@ -143,10 +226,17 @@ export async function createProduct(formData: FormData) {
   }
 
   revalidatePath("/admin/products");
+  await logAdminAction({
+    action: "create",
+    resourceType: "product",
+    resourceId: data.id,
+    details: { name, slug, price },
+  });
   return { success: true, id: data.id };
 }
 
 export async function updateProduct(id: string, formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const name = formData.get("name") as string;
@@ -190,20 +280,33 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   revalidatePath("/admin/products");
+  await logAdminAction({
+    action: "update",
+    resourceType: "product",
+    resourceId: id,
+    details: { name, slug, price },
+  });
   return { success: true };
 }
 
 export async function deleteProduct(id: string) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from("products").delete().eq("id", id);
 
   if (error) return { error: error.message };
 
   revalidatePath("/admin/products");
+  await logAdminAction({
+    action: "delete",
+    resourceType: "product",
+    resourceId: id,
+  });
   return { success: true };
 }
 
 export async function toggleProductActive(id: string, isActive: boolean) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase
     .from("products")
@@ -217,6 +320,7 @@ export async function toggleProductActive(id: string, isActive: boolean) {
 }
 
 export async function uploadProductImage(file: File, productId: string) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const ext = file.name.split(".").pop();

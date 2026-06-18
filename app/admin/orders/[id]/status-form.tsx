@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { updateOrderStatus } from "../../../account/actions";
+import { updateOrderStatus } from "../actions";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -28,9 +29,14 @@ export function StatusUpdateForm({
 
   const handleUpdate = async () => {
     setLoading(true);
-    await updateOrderStatus(orderId, status);
+    const result = await updateOrderStatus(orderId, status);
     setLoading(false);
-    router.refresh();
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(`Order status updated to ${status}`);
+      router.refresh();
+    }
   };
 
   return (

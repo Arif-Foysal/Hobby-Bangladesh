@@ -9,8 +9,8 @@ export default async function AdminPage() {
 
   return (
     <>
-      <div className="px-4 lg:px-6">
-        <h2 className="text-2xl font-bold tracking-tight">{storeName}</h2>
+      <div className="flex flex-col gap-1 px-4 lg:px-6">
+        <h2 className="font-display text-2xl font-bold tracking-tight">{storeName}</h2>
         <p className="text-muted-foreground">
           Welcome back. Here&apos;s an overview of your store.
         </p>

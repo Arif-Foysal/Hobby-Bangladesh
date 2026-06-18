@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { toggleProductActive } from "./actions";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export function ToggleProductActiveButton({
   id,
@@ -14,8 +15,13 @@ export function ToggleProductActiveButton({
   const router = useRouter();
 
   const handleToggle = async () => {
-    await toggleProductActive(id, isActive);
-    router.refresh();
+    const result = await toggleProductActive(id, isActive);
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(isActive ? "Product deactivated" : "Product activated");
+      router.refresh();
+    }
   };
 
   return (

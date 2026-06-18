@@ -13,8 +13,18 @@ import {
 } from "@/components/ui/carousel";
 import { createClient } from "@/lib/supabase/server";
 import { getStoreSetting } from "@/lib/supabase/store";
-import { IconArrowRight, IconCategory, IconStarFilled } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconCategory,
+  IconStarFilled,
+  IconTruckDelivery,
+  IconShieldCheck,
+  IconRecycle,
+  IconHeadset,
+} from "@tabler/icons-react";
+import { FadeIn } from "@/components/fade-in";
 import type { ProductImage, HeroSlidesConfig } from "@/lib/database/types";
+import { HeaderSearch } from "@/components/header-search";
 
 export const metadata = {
   title: "Hobby Bangladesh — Your Hobby Store",
@@ -58,6 +68,29 @@ async function getActiveCategories() {
     .limit(6);
   return data || [];
 }
+
+const trustItems = [
+  {
+    icon: IconTruckDelivery,
+    title: "Free Shipping",
+    desc: "On orders over ৳5,000",
+  },
+  {
+    icon: IconShieldCheck,
+    title: "Secure Payment",
+    desc: "SSLCommerz protected",
+  },
+  {
+    icon: IconRecycle,
+    title: "Easy Returns",
+    desc: "7-day return policy",
+  },
+  {
+    icon: IconHeadset,
+    title: "24/7 Support",
+    desc: "Call or WhatsApp us",
+  },
+];
 
 export default async function HomePage() {
   const [storeInfo, heroSlides, featuredProducts, categories] =
@@ -121,39 +154,69 @@ export default async function HomePage() {
           </Carousel>
         </section>
       ) : (
-        /* Fallback hero when no slides */
-        <section className="relative bg-gradient-to-br from-primary/10 via-background to-muted/30">
-          <div className="mx-auto max-w-7xl px-4 py-16 lg:px-6 lg:py-24">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-muted/30">
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 py-16 lg:flex-row lg:px-6 lg:py-24">
+            <div className="max-w-2xl text-center lg:text-left">
+              <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
                 Welcome to {storeName}
               </h1>
               <p className="mt-4 text-lg text-muted-foreground">
                 Discover a curated collection of hobby products. From RC cars to
                 model kits, find everything you need for your next project.
               </p>
-              <div className="mt-8 flex gap-3">
+              <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
                 <Button asChild size="lg">
                   <Link href="/products">
                     Browse Products <IconArrowRight />
                   </Link>
                 </Button>
               </div>
+              <div className="mt-6">
+                <HeaderSearch />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <div className="flex size-72 items-center justify-center rounded-full bg-primary/10">
+                <div className="flex size-48 items-center justify-center rounded-full bg-primary/20">
+                  <IconCategory className="size-20 text-primary" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
       )}
 
+      {/* Trust Bar */}
+      <FadeIn>
+        <section className="border-y bg-muted/30">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-6 md:grid-cols-4 lg:px-6">
+            {trustItems.map((item) => (
+              <div
+                key={item.title}
+                className="flex items-center gap-3 rounded-lg px-3 py-2"
+              >
+                <item.icon className="size-5 shrink-0 text-primary" />
+                <div>
+                  <p className="text-xs font-semibold">{item.title}</p>
+                  <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </FadeIn>
+
       {/* Categories */}
       {categories.length > 0 && (
+        <FadeIn delay={100}>
         <section className="mx-auto w-full max-w-7xl px-4 py-12 lg:px-6 lg:py-16">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight">
+              <h2 className="font-display text-2xl font-bold tracking-tight">
                 Shop by Category
               </h2>
               <p className="text-muted-foreground">
-                Browse our product categories.
+                Find exactly what you need.
               </p>
             </div>
             <Button variant="ghost" asChild>
@@ -169,15 +232,15 @@ export default async function HomePage() {
                 href={`/products?category=${cat.slug}`}
                 className="group"
               >
-                <Card className="overflow-hidden transition-all hover:shadow-lg">
+                <Card className="overflow-hidden border-0 bg-muted/50 transition-all hover:shadow-lg">
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                     <Image
                       src={cat.image_url || PLACEHOLDER_IMG}
                       alt={cat.name}
                       fill
-                      className="object-cover transition-transform group-hover:scale-105"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4">
                       <h3 className="text-lg font-semibold text-white drop-shadow-md">
                         {cat.name}
@@ -194,16 +257,18 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
+        </FadeIn>
       )}
 
       <Separator />
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
+        <FadeIn delay={200}>
         <section className="mx-auto w-full max-w-7xl px-4 py-12 lg:px-6 lg:py-16">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight">
+              <h2 className="font-display text-2xl font-bold tracking-tight">
                 Popular Products
               </h2>
               <p className="text-muted-foreground">Our best-selling items.</p>
@@ -229,13 +294,13 @@ export default async function HomePage() {
                   href={`/products/${product.slug}`}
                   className="group"
                 >
-                  <Card className="overflow-hidden transition-all hover:shadow-lg">
+                  <Card className="overflow-hidden border-0 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
                     <div className="relative aspect-square overflow-hidden bg-muted">
                       <Image
                         src={image?.url || PLACEHOLDER_IMG}
                         alt={product.name}
                         fill
-                        className="object-cover transition-transform group-hover:scale-105"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       {hasDiscount && (
                         <Badge
@@ -272,10 +337,15 @@ export default async function HomePage() {
                       </div>
                       {product.rating_avg > 0 && (
                         <div className="mt-1 flex items-center gap-1">
-                          <IconStarFilled className="size-3 text-yellow-400" />
+                          <IconStarFilled className="size-3 text-yellow-500" />
                           <span className="text-xs text-muted-foreground">
                             {product.rating_avg.toFixed(1)}
                           </span>
+                          {product.sold_count > 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              ({product.sold_count} sold)
+                            </span>
+                          )}
                         </div>
                       )}
                     </CardContent>
@@ -285,21 +355,22 @@ export default async function HomePage() {
             })}
           </div>
         </section>
+        </FadeIn>
       )}
 
       {/* Empty state */}
       {featuredProducts.length === 0 && categories.length === 0 && (
         <section className="mx-auto w-full max-w-7xl px-4 py-24 text-center lg:px-6">
           <IconCategory className="mx-auto size-12 text-muted-foreground" />
-          <h2 className="mt-4 text-2xl font-bold">
+          <h2 className="mt-4 font-display text-2xl font-bold">
             Welcome to {storeName}
           </h2>
           <p className="mt-2 text-muted-foreground">
             Products are being added. Check back soon!
           </p>
-          <Button asChild className="mt-6">
-            <Link href="/products">Browse Products</Link>
-          </Button>
+          <div className="mt-6 flex justify-center">
+            <HeaderSearch />
+          </div>
         </section>
       )}
     </div>

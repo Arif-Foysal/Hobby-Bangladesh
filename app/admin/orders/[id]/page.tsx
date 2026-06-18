@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getOrder } from "../../../account/actions";
+import { getOrder } from "../actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +12,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusUpdateForm } from "./status-form";
+import { PaymentStatusForm } from "./payment-form";
+import { OrderNoteForm } from "./note-form";
 
 export const metadata = { title: "Order Detail | Admin | Hobby Bangladesh" };
 
@@ -153,6 +155,39 @@ export default async function AdminOrderDetailPage({
           <StatusUpdateForm orderId={order.id} currentStatus={order.status} statuses={allStatuses} />
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Payment Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PaymentStatusForm orderId={order.id} currentStatus={order.payment_status} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Internal Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <OrderNoteForm orderId={order.id} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {order.notes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Order Notes History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="whitespace-pre-wrap rounded-md bg-muted p-4 text-sm">
+              {order.notes}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

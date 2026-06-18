@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { saveHeroSlides, uploadHeroImage } from "./actions";
 import { IconX, IconArrowUp, IconArrowDown, IconPhoto } from "@tabler/icons-react";
+import { toast } from "sonner";
 import type { HeroSlide } from "@/lib/database/types";
 
 export function HeroSlidesManager({
@@ -31,7 +32,9 @@ export function HeroSlidesManager({
       if (file.size > 5 * 1024 * 1024) continue;
 
       const result = await uploadHeroImage(file);
-      if (result.url) {
+      if (result.error) {
+        toast.error(result.error);
+      } else if (result.url) {
         setSlides((prev) => [...prev, { image_url: result.url! }]);
       }
     }
@@ -61,8 +64,9 @@ export function HeroSlidesManager({
 
   const handleSave = async () => {
     setSaving(true);
-    await saveHeroSlides(slides);
+    const result = await saveHeroSlides(slides);
     setSaving(false);
+    if (result.success) toast.success("Hero slides saved");
   };
 
   return (

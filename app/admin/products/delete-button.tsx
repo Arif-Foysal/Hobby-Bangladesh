@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { deleteProduct } from "./actions";
 import { Button } from "@/components/ui/button";
 import { IconTrash } from "@tabler/icons-react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +23,14 @@ export function DeleteProductButton({ id, name }: { id: string; name: string }) 
   const [open, setOpen] = useState(false);
 
   const handleDelete = async () => {
-    await deleteProduct(id);
+    const result = await deleteProduct(id);
     setOpen(false);
-    router.refresh();
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Product deleted");
+      router.refresh();
+    }
   };
 
   return (

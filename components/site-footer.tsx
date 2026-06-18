@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { getStoreSetting } from "@/lib/supabase/store";
+import { BrandLogo } from "./brand-logo";
 
 export async function SiteFooter() {
   const storeInfo = await getStoreSetting("store");
@@ -11,7 +12,7 @@ export async function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-12 lg:px-6">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <h3 className="text-sm font-semibold">{storeName}</h3>
+            <BrandLogo />
             <p className="mt-2 text-sm text-muted-foreground">
               Your destination for hobby products in Bangladesh.
             </p>

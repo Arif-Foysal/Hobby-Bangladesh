@@ -4,6 +4,7 @@ import { getCategories } from "../../admin/categories/actions";
 import { ProductCard } from "@/components/product-card";
 import { ProductFilters } from "@/components/product-filters";
 import { Button } from "@/components/ui/button";
+import { IconPackage, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 
 export const metadata = {
@@ -22,7 +23,7 @@ export default async function ProductsPage({
   const search = params.search;
   const sort = params.sort;
 
-  const [{ products, totalPages }, categories] = await Promise.all([
+  const [{ products, totalPages, total }, categories] = await Promise.all([
     getProductsForListing({ categorySlug, search, sort, page }),
     getCategories(),
   ]);
@@ -34,7 +35,7 @@ export default async function ProductsPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Products</h1>
         <p className="text-muted-foreground">
           Browse our collection of hobby products.
         </p>
@@ -46,15 +47,55 @@ export default async function ProductsPage({
           currentCategory={categorySlug}
           currentSort={sort}
           currentSearch={search}
+          totalResults={total}
         />
       </Suspense>
 
       {products.length === 0 ? (
         <div className="mt-12 flex flex-col items-center gap-4 text-center">
-          <p className="text-lg text-muted-foreground">No products found.</p>
-          <Button asChild>
-            <Link href="/products">Clear filters</Link>
-          </Button>
+          {search ? (
+            <>
+              <IconSearch className="size-12 text-muted-foreground" />
+              <p className="text-lg font-medium">No results for &ldquo;{search}&rdquo;</p>
+              <p className="max-w-md text-sm text-muted-foreground">
+                Try different keywords, check your spelling, or browse our categories below.
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {activeCategories.length > 0 && activeCategories.slice(0, 4).map((cat) => (
+                  <Button key={cat.slug} variant="outline" size="sm" asChild>
+                    <Link href={`/products?category=${cat.slug}`}>
+                      {cat.name}
+                    </Link>
+                  </Button>
+                ))}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/products">Clear all filters</Link>
+                </Button>
+              </div>
+            </>
+          ) : categorySlug ? (
+            <>
+              <IconPackage className="size-12 text-muted-foreground" />
+              <p className="text-lg font-medium">No products in this category</p>
+              <p className="text-sm text-muted-foreground">
+                This category is empty. Try browsing all products.
+              </p>
+              <Button asChild>
+                <Link href="/products">Browse All Products</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <IconPackage className="size-12 text-muted-foreground" />
+              <p className="text-lg font-medium">No products found</p>
+              <p className="text-sm text-muted-foreground">
+                Try different filters or check back later.
+              </p>
+              <Button asChild>
+                <Link href="/products">Clear Filters</Link>
+              </Button>
+            </>
+          )}
         </div>
       ) : (
         <>
@@ -69,6 +110,9 @@ export default async function ProductsPage({
                 images={
                   Array.isArray(product.images) ? product.images : []
                 }
+                categoryName={product.categories?.name}
+                ratingAvg={product.rating_avg}
+                soldCount={product.sold_count}
               />
             ))}
           </div>

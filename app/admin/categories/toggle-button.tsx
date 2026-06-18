@@ -3,13 +3,19 @@
 import { useRouter } from "next/navigation";
 import { toggleCategoryActive } from "./actions";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export function ToggleActiveButton({ id, isActive }: { id: string; isActive: boolean }) {
   const router = useRouter();
 
   const handleToggle = async () => {
-    await toggleCategoryActive(id, isActive);
-    router.refresh();
+    const result = await toggleCategoryActive(id, isActive);
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(isActive ? "Category deactivated" : "Category activated");
+      router.refresh();
+    }
   };
 
   return (

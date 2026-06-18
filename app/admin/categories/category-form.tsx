@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { createCategory, updateCategory, uploadCategoryImage } from "./actions";
 import { IconPhoto, IconX } from "@tabler/icons-react";
+import { toast } from "sonner";
 import type { Category } from "@/lib/database/types";
 
 function slugify(text: string) {
@@ -67,6 +68,7 @@ export function CategoryForm({
 
     if (result.error) {
       setError(result.error);
+      toast.error(result.error);
     } else if (result.url) {
       setImageUrl(result.url);
     }
@@ -91,10 +93,12 @@ export function CategoryForm({
 
     if (result.error) {
       setError(result.error);
+      toast.error(result.error);
       setLoading(false);
       return;
     }
 
+    toast.success(category ? "Category updated" : "Category created");
     router.push("/admin/categories");
   };
 

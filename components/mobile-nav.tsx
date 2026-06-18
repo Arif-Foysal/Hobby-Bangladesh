@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,10 +10,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { IconMenu } from "@tabler/icons-react";
+import { IconMenu, IconUser } from "@tabler/icons-react";
+import { createClient } from "@/lib/supabase/client";
+import { BrandLogo } from "./brand-logo";
+import { Separator } from "@/components/ui/separator";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getClaims().then(({ data }) => {
+      setIsLoggedIn(!!data?.claims);
+    });
+  }, []);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -25,29 +36,40 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="left">
         <SheetHeader>
-          <SheetTitle>Hobby BD</SheetTitle>
+          <SheetTitle>
+            <BrandLogo />
+          </SheetTitle>
         </SheetHeader>
-        <nav className="mt-6 flex flex-col gap-2">
+        <nav className="mt-6 flex flex-col gap-1">
           <Link
             href="/"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >
             Home
           </Link>
           <Link
             href="/products"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >
             Products
           </Link>
           <Link
             href="/cart"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >
             Cart
+          </Link>
+          <Separator className="my-2" />
+          <Link
+            href={isLoggedIn ? "/account/orders" : "/auth/login"}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+          >
+            <IconUser className="size-4" />
+            {isLoggedIn ? "My Account" : "Sign In"}
           </Link>
         </nav>
       </SheetContent>

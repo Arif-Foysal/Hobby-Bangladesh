@@ -7,7 +7,14 @@ import { RelatedProducts } from "@/components/related-products";
 import { ProductReviews } from "@/components/product-reviews";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { IconChevronRight } from "@tabler/icons-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  IconChevronRight,
+  IconTruckDelivery,
+  IconShieldCheck,
+  IconRecycle,
+} from "@tabler/icons-react";
+import { getStoreSetting } from "@/lib/supabase/store";
 
 export async function generateMetadata({
   params,
@@ -36,6 +43,11 @@ export default async function ProductDetailPage({
   const images = Array.isArray(product.images) ? product.images : [];
   const inStock = product.stock_qty > 0;
   const category = product.categories;
+  const shipping = await getStoreSetting("shipping") as {
+    inside_dhaka: number;
+    outside_dhaka: number;
+    free_shipping_min: number;
+  } | null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
@@ -63,7 +75,7 @@ export default async function ProductDetailPage({
 
         <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="font-display text-3xl font-bold tracking-tight">
               {product.name}
             </h1>
             {product.short_desc && (
@@ -74,7 +86,7 @@ export default async function ProductDetailPage({
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold">
+            <span className="text-3xl font-bold text-primary">
               ৳ {product.price.toLocaleString()}
             </span>
             {product.compare_at && product.compare_at > product.price && (
@@ -84,18 +96,49 @@ export default async function ProductDetailPage({
             )}
           </div>
 
-          <Badge
-            variant={inStock ? "default" : "destructive"}
-            className="w-fit"
-          >
-            {inStock ? `In Stock (${product.stock_qty})` : "Out of Stock"}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge
+              variant={inStock ? "default" : "destructive"}
+              className="w-fit"
+            >
+              {inStock ? `In Stock (${product.stock_qty})` : "Out of Stock"}
+            </Badge>
+            {product.sold_count > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {product.sold_count} sold
+              </span>
+            )}
+          </div>
+
+          {/* Shipping Info */}
+          <Card className="bg-muted/30">
+            <CardContent className="flex flex-col gap-2 p-3 text-sm">
+              <div className="flex items-center gap-2">
+                <IconTruckDelivery className="size-4 text-primary" />
+                <span>
+                  {shipping
+                    ? `Shipping: ৳${shipping.inside_dhaka} (Dhaka) / ৳${shipping.outside_dhaka} (Other)`
+                    : "Shipping calculated at checkout"}
+                </span>
+              </div>
+              {shipping && shipping.free_shipping_min > 0 && (
+                <div className="flex items-center gap-2">
+                  <IconShieldCheck className="size-4 text-primary" />
+                  <span>Free shipping on orders over ৳{shipping.free_shipping_min.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <IconRecycle className="size-4 text-primary" />
+                <span>7-day easy return</span>
+              </div>
+            </CardContent>
+          </Card>
 
           <Separator />
 
           {product.description && (
-            <div className="prose prose-sm max-w-none">
-              <p>{product.description}</p>
+            <div>
+              <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
             </div>
           )}
 

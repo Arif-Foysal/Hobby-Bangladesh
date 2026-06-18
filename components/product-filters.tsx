@@ -20,16 +20,18 @@ export function ProductFilters({
   currentCategory,
   currentSort,
   currentSearch,
+  totalResults,
 }: {
   categories: { name: string; slug: string }[];
   currentCategory?: string;
   currentSort?: string;
   currentSearch?: string;
+  totalResults?: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -57,15 +59,41 @@ export function ProductFilters({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative">
-        <IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search products..."
-          className="pl-9"
-          defaultValue={currentSearch}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex-1">
+          <IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            className="pl-9"
+            defaultValue={currentSearch}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
+        <Select
+          defaultValue={currentSort ?? "newest"}
+          onValueChange={(value) => updateParam("sort", value)}
+        >
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="price_asc">Price: Low to High</SelectItem>
+              <SelectItem value="price_desc">Price: High to Low</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
+
+      {/* Result count */}
+      {currentSearch && (
+        <p className="text-xs text-muted-foreground">
+          {totalResults !== undefined
+            ? `Showing results for "${currentSearch}" (${totalResults} found)`
+            : `Searching for "${currentSearch}"...`}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <Link
@@ -94,22 +122,6 @@ export function ProductFilters({
           </Link>
         ))}
       </div>
-
-      <Select
-        defaultValue={currentSort ?? "newest"}
-        onValueChange={(value) => updateParam("sort", value)}
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Sort by" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="newest">Newest</SelectItem>
-            <SelectItem value="price_asc">Price: Low to High</SelectItem>
-            <SelectItem value="price_desc">Price: High to Low</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
     </div>
   );
 }

@@ -1,21 +1,20 @@
 import Link from "next/link";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
 import { createClient } from "@/lib/supabase/server";
+import { BrandLogo } from "./brand-logo";
 import { SiteThemeToggle } from "./site-theme-toggle";
 import { CartButton } from "./cart-button";
 import { MobileNav } from "./mobile-nav";
+import { HeaderSearch } from "./header-search";
+import { Button } from "@/components/ui/button";
+import { IconUser } from "@tabler/icons-react";
 
 export async function SiteHeader() {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
+  const isLoggedIn = !!authData?.claims;
 
   let cartCount = 0;
-  if (authData?.claims) {
+  if (isLoggedIn) {
     const { count } = await supabase
       .from("carts")
       .select("*", { count: "exact", head: true })
@@ -25,28 +24,40 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 lg:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 lg:px-6">
         <MobileNav />
 
-        <Link href="/" className="flex items-center gap-2 font-bold">
-          Hobby BD
-        </Link>
+        <BrandLogo />
 
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <Link href="/products" className="px-3 py-2 text-sm">
-                  Products
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+        <nav className="hidden items-center gap-1 md:flex">
+          <Link
+            href="/products"
+            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            Products
+          </Link>
+        </nav>
 
         <div className="flex-1" />
 
+        <HeaderSearch />
+
         <div className="flex items-center gap-1">
+          {isLoggedIn ? (
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/account/orders">
+                <IconUser className="size-5" />
+                <span className="sr-only">Account</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" asChild className="hidden md:flex">
+              <Link href="/auth/login">
+                <IconUser className="mr-1.5 size-4" />
+                Sign In
+              </Link>
+            </Button>
+          )}
           <SiteThemeToggle />
           <CartButton serverCartCount={cartCount} />
         </div>

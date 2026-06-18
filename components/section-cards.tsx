@@ -1,4 +1,4 @@
-import { IconTrendingDown, IconTrendingUp, IconCurrencyTaka, IconShoppingCart, IconPackage } from "@tabler/icons-react";
+import { IconTrendingDown, IconTrendingUp, IconUsers, IconShoppingCart, IconPackage } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -134,7 +134,7 @@ export async function SectionCards() {
             {stats.customers}
           </CardTitle>
           <Badge variant="outline">
-            <IconCurrencyTaka />
+            <IconUsers />
           </Badge>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">

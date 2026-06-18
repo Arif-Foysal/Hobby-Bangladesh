@@ -1,3 +1,5 @@
+import { createClient } from "@/lib/supabase/server";
+import { getCart } from "@/app/cart/actions";
 import { getStoreSetting } from "@/lib/supabase/store";
 import { CheckoutContent } from "./checkout-content";
 
@@ -5,19 +7,52 @@ export const metadata = {
   title: "Checkout | Hobby Bangladesh",
 };
 
+export interface CheckoutCartItem {
+  productId: string;
+  quantity: number;
+  name: string;
+  price: number;
+  image: string | null;
+}
+
 export default async function CheckoutPage() {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+  const isLoggedIn = !!authData?.claims;
+
   const shipping = (await getStoreSetting("shipping")) as {
     inside_dhaka: number;
     outside_dhaka: number;
     free_shipping_min: number;
   } | null;
 
+  let cartItems: CheckoutCartItem[] = [];
+
+  if (isLoggedIn) {
+    const dbCart = await getCart();
+    cartItems = dbCart.map((item) => {
+      const product = item.products;
+      const images = Array.isArray(product?.images) ? product.images : [];
+      return {
+        productId: product?.id ?? "",
+        quantity: item.quantity,
+        name: product?.name ?? "Unknown",
+        price: product?.price ?? 0,
+        image: images.length > 0 ? images[0].url : null,
+      };
+    });
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
       <h1 className="text-3xl font-bold tracking-tight">Checkout</h1>
       <p className="text-muted-foreground">Complete your order.</p>
       <div className="mt-8">
-        <CheckoutContent shipping={shipping} />
+        <CheckoutContent
+          initialItems={cartItems}
+          isGuest={!isLoggedIn}
+          shipping={shipping}
+        />
       </div>
     </div>
   );

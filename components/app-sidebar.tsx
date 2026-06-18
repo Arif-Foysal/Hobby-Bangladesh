@@ -10,6 +10,8 @@ import {
   IconUsers,
   IconSettings,
   IconInnerShadowTop,
+  IconTicket,
+  IconClipboardList,
 } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -29,11 +31,13 @@ const navMain = [
   { title: "Products", url: "/admin/products", icon: IconShoppingCart },
   { title: "Categories", url: "/admin/categories", icon: IconCategory },
   { title: "Orders", url: "/admin/orders", icon: IconReceipt },
+  { title: "Coupons", url: "/admin/coupons", icon: IconTicket },
   { title: "Reviews", url: "/admin/reviews", icon: IconStar },
   { title: "Customers", url: "/admin/customers", icon: IconUsers },
 ];
 
 const navSecondary = [
+  { title: "Audit Log", url: "/admin/audit-log", icon: IconClipboardList },
   { title: "Settings", url: "/admin/settings", icon: IconSettings },
 ];
 

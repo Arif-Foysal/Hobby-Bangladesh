@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CheckoutForm } from "./checkout-form";
 import { IconShoppingBag } from "@tabler/icons-react";
 
-interface CartItem {
+interface CheckoutCartItem {
   productId: string;
   quantity: number;
   name: string;
@@ -17,70 +17,64 @@ interface CartItem {
 }
 
 export function CheckoutContent({
+  initialItems,
+  isGuest,
   shipping,
 }: {
-  shipping: { inside_dhaka: number; outside_dhaka: number; free_shipping_min: number } | null;
+  initialItems: CheckoutCartItem[];
+  isGuest: boolean;
+  shipping: {
+    inside_dhaka: number;
+    outside_dhaka: number;
+    free_shipping_min: number;
+  } | null;
 }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [guestItems, setGuestItems] = useState<CheckoutCartItem[]>([]);
+  const [guestLoaded, setGuestLoaded] = useState(false);
 
   useEffect(() => {
-    const loadCart = async () => {
+    if (!isGuest) return;
+
+    const loadGuestCart = async () => {
+      const guestCart = getGuestCart();
+      if (guestCart.length === 0) {
+        setGuestLoaded(true);
+        return;
+      }
+
       const supabase = createClient();
-      const { data: authData } = await supabase.auth.getClaims();
+      const ids = guestCart.map((i) => i.productId);
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, name, price, images, stock_qty")
+        .in("id", ids);
 
-      let items: { productId: string; quantity: number }[] = [];
-
-      if (authData?.claims) {
-        const { data: dbCart } = await supabase
-          .from("carts")
-          .select("product_id, quantity, products(id, name, price, images)")
-          .eq("user_id", authData.claims.sub);
-
-        if (dbCart) {
-          items = dbCart.map((item) => ({
-            productId: item.product_id,
-            quantity: item.quantity,
-          }));
-        }
-      } else {
-        items = getGuestCart();
-      }
-
-      if (items.length > 0) {
-        const ids = items.map((i) => i.productId);
-        const { data: products } = await supabase
-          .from("products")
-          .select("id, name, price, images")
-          .in("id", ids);
-
-        const productMap = new Map(products?.map((p) => [p.id, p]) ?? []);
-
-        setCartItems(
-          items.map((item) => {
-            const product = productMap.get(item.productId);
-            const images = Array.isArray(product?.images) ? product.images : [];
-            return {
-              productId: item.productId,
-              quantity: item.quantity,
-              name: product?.name ?? "Unknown",
-              price: product?.price ?? 0,
-              image: images.length > 0 ? images[0].url : null,
-            };
-          })
-        );
-      }
-
-      setLoading(false);
+      const productMap = new Map(products?.map((p) => [p.id, p]) ?? []);
+      setGuestItems(
+        guestCart.map((i) => {
+          const product = productMap.get(i.productId);
+          const images = Array.isArray(product?.images) ? product.images : [];
+          return {
+            productId: i.productId,
+            quantity: i.quantity,
+            name: (product as { name?: string })?.name ?? "Unknown",
+            price: (product as { price?: number })?.price ?? 0,
+            image: images.length > 0 ? (images[0] as { url: string }).url : null,
+          };
+        })
+      );
+      setGuestLoaded(true);
     };
 
-    loadCart();
-  }, []);
+    loadGuestCart();
+  }, [isGuest]);
 
-  if (loading) {
+  const cartItems = isGuest ? guestItems : initialItems;
+
+  if (isGuest && !guestLoaded) {
     return (
       <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:col-span-2">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-40 animate-pulse rounded-lg bg-muted" />
           ))}

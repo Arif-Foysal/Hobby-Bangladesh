@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { createProduct, updateProduct, uploadProductImage } from "./actions";
 import { IconX, IconPhoto } from "@tabler/icons-react";
+import { toast } from "sonner";
 import type { Category, ProductImage } from "@/lib/database/types";
 
 function slugify(text: string) {
@@ -86,6 +87,7 @@ export function ProductForm({
       const result = await uploadProductImage(file, product?.id ?? "temp");
       if (result.error) {
         setError(result.error);
+        toast.error(result.error);
       } else if (result.url) {
         newImages.push({ url: result.url, alt: file.name });
       }
@@ -119,10 +121,12 @@ export function ProductForm({
 
     if (result.error) {
       setError(result.error);
+      toast.error(result.error);
       setLoading(false);
       return;
     }
 
+    toast.success(product ? "Product updated" : "Product created");
     router.push("/admin/products");
   };
 

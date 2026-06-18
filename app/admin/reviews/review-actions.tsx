@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { IconCheck, IconX, IconTrash } from "@tabler/icons-react";
 import {
@@ -15,7 +14,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { createClient } from "@/lib/supabase/client";
+import { toggleReviewApproval, deleteReview } from "./actions";
+import { toast } from "sonner";
 
 export function ReviewActions({
   id,
@@ -24,26 +24,28 @@ export function ReviewActions({
   id: string;
   isApproved: boolean;
 }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const toggleApproval = async () => {
+  const handleToggle = async () => {
     setLoading(true);
-    const supabase = createClient();
-    await supabase
-      .from("reviews")
-      .update({ is_approved: !isApproved })
-      .eq("id", id);
+    const result = await toggleReviewApproval(id, isApproved);
     setLoading(false);
-    router.refresh();
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(isApproved ? "Review rejected" : "Review approved");
+    }
   };
 
-  const deleteReview = async () => {
+  const handleDelete = async () => {
     setLoading(true);
-    const supabase = createClient();
-    await supabase.from("reviews").delete().eq("id", id);
+    const result = await deleteReview(id);
     setLoading(false);
-    router.refresh();
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Review deleted");
+    }
   };
 
   return (
@@ -51,7 +53,7 @@ export function ReviewActions({
       <Button
         variant="ghost"
         size="icon"
-        onClick={toggleApproval}
+        onClick={handleToggle}
         disabled={loading}
         title={isApproved ? "Reject" : "Approve"}
       >
@@ -72,7 +74,7 @@ export function ReviewActions({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteReview}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

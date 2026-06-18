@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import type { HeroSlide } from "@/lib/database/types";
 
@@ -17,6 +18,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
 }
 
 export async function saveHeroSlides(slides: HeroSlide[]) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const { data: existing } = await supabase
@@ -42,6 +44,7 @@ export async function saveHeroSlides(slides: HeroSlide[]) {
 }
 
 export async function uploadHeroImage(file: File) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const ext = file.name.split(".").pop();
@@ -61,6 +64,7 @@ export async function uploadHeroImage(file: File) {
 }
 
 export async function saveStoreInfo(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const value = {
@@ -81,6 +85,7 @@ export async function saveStoreInfo(formData: FormData) {
 }
 
 export async function saveCurrency(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
 
   const value = {

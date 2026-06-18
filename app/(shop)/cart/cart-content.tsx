@@ -1,106 +1,202 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useOptimistic, useTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getCart } from "@/app/cart/actions";
-import { getGuestCart } from "@/lib/cart";
+import { updateCartQuantity, removeFromCart } from "@/app/cart/actions";
+import {
+  updateGuestCartQuantity,
+  removeFromGuestCart,
+  getGuestCart,
+} from "@/lib/cart";
 import { createClient } from "@/lib/supabase/client";
-import { CartItemControls } from "./controls";
-import { GuestCartItemControls } from "./guest-controls";
-import { IconShoppingBag } from "@tabler/icons-react";
+import {
+  IconMinus,
+  IconPlus,
+  IconTrash,
+  IconShoppingBag,
+  IconPhotoOff,
+} from "@tabler/icons-react";
+import type { ShippingSettings } from "./page";
 
-interface Product {
+interface CartProduct {
   id: string;
   name: string;
   slug: string;
   price: number;
   images: { url: string }[];
+  stock_qty: number;
 }
 
-export function CartPageContent() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [dbItems, setDbItems] = useState<{
-    id: string;
-    quantity: number;
-    products: Product | null;
-  }[]>([]);
-  const [guestProducts, setGuestProducts] = useState<{
-    productId: string;
-    quantity: number;
-    product: Product | null;
-  }[]>([]);
-  const [loading, setLoading] = useState(true);
+interface CartItem {
+  id: string;
+  quantity: number;
+  products: CartProduct | null;
+}
+
+type OptimisticAction =
+  | { type: "update"; id: string; quantity: number }
+  | { type: "remove"; id: string }
+  | { type: "set"; items: CartItem[] };
+
+function optimisticReducer(
+  state: CartItem[],
+  action: OptimisticAction
+): CartItem[] {
+  switch (action.type) {
+    case "update":
+      return state.map((item) =>
+        item.id === action.id ? { ...item, quantity: action.quantity } : item
+      );
+    case "remove":
+      return state.filter((item) => item.id !== action.id);
+    case "set":
+      return action.items;
+  }
+}
+
+interface DisplayItem {
+  key: string;
+  id: string;
+  productId: string;
+  name: string;
+  slug: string;
+  price: number;
+  image: { url: string } | null;
+  quantity: number;
+  stockQty: number;
+}
+
+export function CartPageContent({
+  initialItems,
+  isGuest,
+  shipping,
+}: {
+  initialItems: CartItem[];
+  isGuest: boolean;
+  shipping: ShippingSettings | null;
+}) {
+  const [optimisticItems, dispatchOptimistic] = useOptimistic(
+    initialItems,
+    optimisticReducer
+  );
+  const [isPending, startTransition] = useTransition();
+
+  // Guest state
+  const [guestItems, setGuestItems] = useState<CartItem[]>([]);
+  const [guestLoaded, setGuestLoaded] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getClaims().then(async ({ data }) => {
-      const loggedIn = !!data?.claims;
-      setIsLoggedIn(loggedIn);
+    if (!isGuest) return;
 
-      if (loggedIn) {
-        const items = await getCart();
-        setDbItems(items as unknown as typeof dbItems);
-      } else {
-        const guestCart = getGuestCart();
-        if (guestCart.length > 0) {
-          const supabase = createClient();
-          const ids = guestCart.map((item) => item.productId);
-          const { data: products } = await supabase
-            .from("products")
-            .select("id, name, slug, price, images")
-            .in("id", ids);
-
-          const productMap = new Map(products?.map((p) => [p.id, p]) ?? []);
-          setGuestProducts(
-            guestCart.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              product: productMap.get(item.productId) ?? null,
-            }))
-          );
-        }
+    const loadGuestCart = async () => {
+      const guestCart = getGuestCart();
+      if (guestCart.length === 0) {
+        setGuestLoaded(true);
+        return;
       }
-      setLoading(false);
-    });
-  }, []);
 
-  const items = isLoggedIn
-    ? dbItems.map((item) => ({
-        key: item.id,
-        id: item.id,
-        productId: item.products?.id ?? "",
-        name: item.products?.name ?? "",
-        slug: item.products?.slug ?? "#",
-        price: item.products?.price ?? 0,
-        image:
-          Array.isArray(item.products?.images) && item.products!.images.length > 0
-            ? item.products!.images[0]
-            : null,
-        quantity: item.quantity,
+      const supabase = createClient();
+      const ids = guestCart.map((i) => i.productId);
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, name, slug, price, images, stock_qty")
+        .in("id", ids);
+
+      const productMap = new Map(products?.map((p) => [p.id, p]) ?? []);
+      setGuestItems(
+        guestCart.map((i) => ({
+          id: i.productId,
+          quantity: i.quantity,
+          products: (productMap.get(i.productId) as CartProduct) ?? null,
+        }))
+      );
+      setGuestLoaded(true);
+    };
+
+    loadGuestCart();
+  }, [isGuest]);
+
+  const refreshGuestCart = async () => {
+    const guestCart = getGuestCart();
+    if (guestCart.length === 0) {
+      setGuestItems([]);
+      return;
+    }
+    const supabase = createClient();
+    const ids = guestCart.map((i) => i.productId);
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, name, slug, price, images, stock_qty")
+      .in("id", ids);
+
+    const productMap = new Map(products?.map((p) => [p.id, p]) ?? []);
+    setGuestItems(
+      guestCart.map((i) => ({
+        id: i.productId,
+        quantity: i.quantity,
+        products: (productMap.get(i.productId) as CartProduct) ?? null,
       }))
-    : guestProducts.map((item) => ({
-        key: item.productId,
-        id: item.productId,
-        productId: item.productId,
-        name: item.product?.name ?? "",
-        slug: item.product?.slug ?? "#",
-        price: item.product?.price ?? 0,
-        image:
-          Array.isArray(item.product?.images) && item.product!.images.length > 0
-            ? item.product!.images[0]
-            : null,
-        quantity: item.quantity,
-      }));
+    );
+  };
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal >= 5000 ? 0 : 60;
-  const total = subtotal + shipping;
+  // Logged-in handlers
+  const handleUpdate = (itemId: string, newQty: number) => {
+    startTransition(async () => {
+      dispatchOptimistic({ type: "update", id: itemId, quantity: newQty });
+      await updateCartQuantity(itemId, newQty);
+    });
+  };
 
-  if (loading) {
+  const handleRemove = (itemId: string) => {
+    startTransition(async () => {
+      dispatchOptimistic({ type: "remove", id: itemId });
+      await removeFromCart(itemId);
+    });
+  };
+
+  // Guest handlers
+  const handleGuestUpdate = (productId: string, newQty: number) => {
+    updateGuestCartQuantity(productId, newQty);
+    refreshGuestCart();
+  };
+
+  const handleGuestRemove = (productId: string) => {
+    removeFromGuestCart(productId);
+    refreshGuestCart();
+  };
+
+  const sourceItems = isGuest ? guestItems : optimisticItems;
+  const items: DisplayItem[] = sourceItems.map((item) => ({
+    key: item.id,
+    id: item.id,
+    productId: item.products?.id ?? item.id,
+    name: item.products?.name ?? "",
+    slug: item.products?.slug ?? "#",
+    price: item.products?.price ?? 0,
+    image:
+      Array.isArray(item.products?.images) &&
+      item.products!.images.length > 0
+        ? item.products!.images[0]
+        : null,
+    quantity: item.quantity,
+    stockQty: item.products?.stock_qty ?? 0,
+  }));
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  const freeShippingMin = shipping?.free_shipping_min ?? 5000;
+  const defaultShipping = shipping?.inside_dhaka ?? 60;
+  const shippingCost = subtotal >= freeShippingMin ? 0 : defaultShipping;
+  const total = subtotal + shippingCost;
+
+  if (isGuest && !guestLoaded) {
     return (
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -119,7 +215,7 @@ export function CartPageContent() {
     return (
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 px-4 py-24 text-center">
         <IconShoppingBag className="size-12 text-muted-foreground" />
-        <h2 className="text-2xl font-bold">Your cart is empty</h2>
+        <h2 className="font-display text-2xl font-bold">Your cart is empty</h2>
         <p className="text-muted-foreground">
           Browse our products and add something to your cart.
         </p>
@@ -132,12 +228,17 @@ export function CartPageContent() {
 
   return (
     <>
-      <p className="mt-2 text-muted-foreground">{items.length} item(s) in your cart</p>
+      <p className="mt-2 text-muted-foreground">
+        {items.length} item{items.length !== 1 ? "s" : ""} in your cart
+      </p>
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="flex flex-col gap-4">
             {items.map((item) => (
-              <Card key={item.key}>
+              <Card
+                key={item.key}
+                className={isPending ? "opacity-70 transition-opacity" : ""}
+              >
                 <CardContent className="flex gap-4 p-4">
                   <div className="relative size-20 shrink-0 overflow-hidden rounded-md bg-muted">
                     {item.image?.url ? (
@@ -148,8 +249,8 @@ export function CartPageContent() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
-                        N/A
+                      <div className="flex size-full items-center justify-center text-muted-foreground">
+                        <IconPhotoOff className="size-5" />
                       </div>
                     )}
                   </div>
@@ -166,44 +267,58 @@ export function CartPageContent() {
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
-                      {isLoggedIn ? (
-                        <CartItemControls
-                          cartItemId={item.id}
-                          quantity={item.quantity}
-                        />
-                      ) : (
-                        <GuestCartItemControls
-                          productId={item.productId}
-                          quantity={item.quantity}
-                          onUpdate={() => {
-                            const guestCart = getGuestCart();
-                            const supabase = createClient();
-                            supabase.auth.getClaims().then(async ({ data }) => {
-                              if (data?.claims) {
-                                setIsLoggedIn(true);
-                                const items = await getCart();
-                                setDbItems(items as unknown as typeof dbItems);
-                              } else {
-                                const ids = guestCart.map((i) => i.productId);
-                                const { data: products } = await supabase
-                                  .from("products")
-                                  .select("id, name, slug, price, images")
-                                  .in("id", ids);
-                                const productMap = new Map(
-                                  products?.map((p) => [p.id, p]) ?? []
-                                );
-                                setGuestProducts(
-                                  guestCart.map((i) => ({
-                                    productId: i.productId,
-                                    quantity: i.quantity,
-                                    product: productMap.get(i.productId) ?? null,
-                                  }))
-                                );
-                              }
-                            });
-                          }}
-                        />
-                      )}
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="size-9"
+                          onClick={() =>
+                            isGuest
+                              ? handleGuestUpdate(
+                                  item.productId,
+                                  item.quantity - 1
+                                )
+                              : handleUpdate(item.id, item.quantity - 1)
+                          }
+                          disabled={item.quantity <= 1 || isPending}
+                        >
+                          <IconMinus className="size-3" />
+                        </Button>
+                        <span className="w-8 text-center text-sm font-medium">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="size-9"
+                          onClick={() =>
+                            isGuest
+                              ? handleGuestUpdate(
+                                  item.productId,
+                                  item.quantity + 1
+                                )
+                              : handleUpdate(item.id, item.quantity + 1)
+                          }
+                          disabled={
+                            item.quantity >= item.stockQty || isPending
+                          }
+                        >
+                          <IconPlus className="size-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="ml-2 size-9 text-muted-foreground"
+                          onClick={() =>
+                            isGuest
+                              ? handleGuestRemove(item.productId)
+                              : handleRemove(item.id)
+                          }
+                          disabled={isPending}
+                        >
+                          <IconTrash className="size-3" />
+                        </Button>
+                      </div>
                       <span className="font-semibold">
                         ৳ {(item.price * item.quantity).toLocaleString()}
                       </span>
@@ -227,11 +342,11 @@ export function CartPageContent() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>{shipping === 0 ? "Free" : `৳ ${shipping}`}</span>
+                <span>{shippingCost === 0 ? "Free" : `৳ ${shippingCost}`}</span>
               </div>
-              {shipping > 0 && (
+              {shippingCost > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Free shipping on orders over ৳ 5,000
+                  Free shipping on orders over ৳ {freeShippingMin.toLocaleString()}
                 </p>
               )}
               <Separator />

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight, IconPhotoOff } from "@tabler/icons-react";
 import type { ProductImage } from "@/lib/database/types";
 
 export function ProductGallery({ images }: { images: ProductImage[] }) {
@@ -18,7 +18,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
   if (images.length === 0) {
     return (
       <div className="flex aspect-square items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        No image available
+        <IconPhotoOff className="size-12" />
       </div>
     );
   }
@@ -44,12 +44,12 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
           />
         </button>
         {images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             {images.map((img, i) => (
               <button
                 key={i}
                 onClick={() => setActiveIndex(i)}
-                className={`relative size-16 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+                className={`relative size-20 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
                   i === activeIndex
                     ? "border-primary"
                     : "border-transparent hover:border-muted-foreground/25"
@@ -70,7 +70,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
         <DialogContent className="max-w-4xl p-0">
           <DialogTitle className="sr-only">Product image {activeIndex + 1} of {images.length}</DialogTitle>
-          <div className="relative aspect-[4/3]">
+          <div className="relative aspect-square">
             <Image
               src={active.url}
               alt={active.alt ?? "Product image"}
