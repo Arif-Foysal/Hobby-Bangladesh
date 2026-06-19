@@ -5,6 +5,35 @@ import { requireAdmin } from "@/lib/supabase/admin";
 import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
+export async function getSearchSuggestions(query: string) {
+  const supabase = await createClient();
+  try {
+    const { data } = await supabase.rpc("search_did_you_mean", { query });
+    return (data as { suggestion: string; similarity: number }[]) || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function logSearchQuery(
+  query: string,
+  resultCount: number,
+  page: string = "products",
+) {
+  const supabase = await createClient();
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    await supabase.from("search_queries").insert({
+      query,
+      result_count: resultCount,
+      user_id: user?.user?.id ?? null,
+      page,
+    });
+  } catch {
+    // silently fail
+  }
+}
+
 export async function getProducts() {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -119,12 +148,18 @@ export async function getProductsForListing({
   sort,
   page,
   perPage = 12,
+  minPrice,
+  maxPrice,
+  inStock,
 }: {
   categorySlug?: string;
   search?: string;
   sort?: string;
   page?: number;
   perPage?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
 }) {
   const supabase = await createClient();
   const from = ((page || 1) - 1) * perPage;
@@ -153,6 +188,18 @@ export async function getProductsForListing({
     );
   }
 
+  if (minPrice !== undefined) {
+    query = query.gte("price", minPrice);
+  }
+
+  if (maxPrice !== undefined) {
+    query = query.lte("price", maxPrice);
+  }
+
+  if (inStock) {
+    query = query.gt("stock_qty", 0);
+  }
+
   switch (sort) {
     case "price_asc":
       query = query.order("price", { ascending: true });
@@ -174,10 +221,33 @@ export async function getProductsForListing({
 
   query = query.range(from, to);
 
-  const { data, error, count } = await query;
+  let { data, error, count } = await query;
   if (error) throw error;
 
-  return { products: data, total: count || 0, totalPages: Math.ceil((count || 0) / perPage) };
+  // If ilike returned 0 results with a search term, try fuzzy matching
+  let fuzzyResults: typeof data = [];
+  if (search && data && data.length === 0) {
+    const { data: fuzzyIds } = await supabase.rpc("search_products_fuzzy", {
+      query: search,
+    });
+    if (fuzzyIds && fuzzyIds.length > 0) {
+      const ids = fuzzyIds.map((r: { id: string }) => r.id);
+      const { data: full } = await supabase
+        .from("products")
+        .select("*, categories(name, slug)")
+        .eq("is_active", true)
+        .in("id", ids)
+        .order("sold_count", { ascending: false });
+      fuzzyResults = full || [];
+    }
+  }
+
+  return {
+    products: data || [],
+    total: count || 0,
+    totalPages: Math.ceil((count || 0) / perPage),
+    fuzzyResults,
+  };
 }
 
 export async function createProduct(formData: FormData) {

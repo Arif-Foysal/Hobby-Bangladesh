@@ -84,7 +84,7 @@ export async function createOrder(formData: FormData) {
   const productIds = cartItems.map((item) => item.productId);
   const { data: products } = await supabase
     .from("products")
-    .select("id, name, price, stock_qty, is_active")
+    .select("id, name, price, stock_qty, sold_count, is_active")
     .in("id", productIds);
 
   if (!products) return { error: "Could not fetch products" };
@@ -181,7 +181,7 @@ export async function createOrder(formData: FormData) {
         .from("products")
         .update({
           stock_qty: product.stock_qty - item.quantity,
-          sold_count: item.quantity,
+          sold_count: product.sold_count + item.quantity,
         })
         .eq("id", item.productId);
     }

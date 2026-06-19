@@ -1,14 +1,4 @@
--- Migration: Full-Text Search for Products
--- Run this in Supabase SQL Editor after the base migration.
--- Adds a tsvector column for ranked full-text search across name, short_desc, description.
-
-ALTER TABLE public.products
-ADD COLUMN IF NOT EXISTS search_vector tsvector
-GENERATED ALWAYS AS (
-  setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
-  setweight(to_tsvector('english', coalesce(short_desc, '')), 'B') ||
-  setweight(to_tsvector('english', coalesce(description, '')), 'C')
-) STORED;
-
-CREATE INDEX IF NOT EXISTS products_search_idx
-ON public.products USING GIN(search_vector);
+-- SUPERSEDED by supabase/migrations/20260618100000_search_improvements.sql
+-- The new migration uses a trigger-based approach that includes category names
+-- in search_vector, plus adds pg_trgm fuzzy matching, search analytics, etc.
+-- Do NOT run this file. Run the migration in supabase/migrations/ instead.

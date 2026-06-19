@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { IconSearch, IconPhotoOff, IconClock } from "@tabler/icons-react";
+import { IconSearch, IconPhotoOff, IconClock, IconBulb } from "@tabler/icons-react";
 
 interface SearchResult {
   id: string;
@@ -44,6 +44,7 @@ function addRecentSearch(q: string) {
 export function HeaderSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [suggestions, setSuggestions] = useState<{ suggestion: string; similarity: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -74,6 +75,7 @@ export function HeaderSearch() {
   const fetchResults = useCallback(async (q: string) => {
     if (!q.trim()) {
       setResults([]);
+      setSuggestions([]);
       return;
     }
     setLoading(true);
@@ -81,6 +83,7 @@ export function HeaderSearch() {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`);
       const json = await res.json();
       setResults(json.results || []);
+      setSuggestions(json.suggestions || []);
       setSelectedIndex(-1);
     } catch {
       setResults([]);
@@ -194,8 +197,34 @@ export function HeaderSearch() {
 
           {/* No results */}
           {query.trim() !== "" && !hasResults && !loading && (
-            <div className="p-6 text-center text-sm text-muted-foreground">
-              No products found for &ldquo;{query}&rdquo;
+            <div className="p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                No products found for &ldquo;{query}&rdquo;
+              </p>
+              {suggestions.length > 0 && (
+                <div className="mt-3 flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <IconBulb className="size-3" />
+                    <span>Did you mean&hellip;</span>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {suggestions.map((s) => (
+                      <button
+                        key={s.suggestion}
+                        type="button"
+                        className="rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground transition-colors hover:bg-accent/80"
+                        onClick={() => {
+                          setOpen(false);
+                          setQuery("");
+                          router.push(`/products?search=${encodeURIComponent(s.suggestion)}`);
+                        }}
+                      >
+                        {s.suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

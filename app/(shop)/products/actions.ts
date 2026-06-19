@@ -1,1 +1,6 @@
-export { getProductsForListing, getProductBySlug } from "../../admin/products/actions";
+export {
+  getProductsForListing,
+  getProductBySlug,
+  getSearchSuggestions,
+  logSearchQuery,
+} from "../../admin/products/actions";
