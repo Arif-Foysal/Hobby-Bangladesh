@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { IconSearch, IconPhotoOff, IconClock, IconBulb } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 
 interface SearchResult {
   id: string;
@@ -142,9 +143,9 @@ export function HeaderSearch() {
   const hasResults = results.length > 0;
 
   return (
-    <div className="relative">
+    <div className="relative w-full md:w-auto">
       <form onSubmit={handleSubmit}>
-        <div className="relative">
+        <div className="relative flex items-center">
           <IconSearch className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             ref={inputRef}
@@ -156,13 +157,22 @@ export function HeaderSearch() {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
-            className="h-9 w-40 pl-9 text-sm transition-all duration-200 focus:w-56 md:w-56 md:focus:w-80"
+            className="h-9 w-full border border-primary pl-9 pr-20 text-sm transition-all duration-200 focus:ring-2 focus:ring-primary/20 focus:w-full md:w-[28rem] md:focus:w-[32rem]"
           />
-          {loading && (
-            <div className="absolute right-2.5 top-1/2 size-4 -translate-y-1/2">
+          <div className="absolute right-0 top-0 flex h-full items-center pr-1">
+            {loading ? (
               <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary" />
-            </div>
-          )}
+            ) : (
+              <Button
+                type="submit"
+                variant="default"
+                size="sm"
+                className="h-7 px-3 text-xs"
+              >
+                Search
+              </Button>
+            )}
+          </div>
         </div>
       </form>
 
@@ -278,7 +288,7 @@ export function HeaderSearch() {
                       </p>
                     </div>
                     <div className="flex items-baseline gap-1 text-sm">
-                      <span className="font-semibold">
+                      <span className="font-semibold text-primary">
                         ৳ {item.price.toLocaleString()}
                       </span>
                       {hasDiscount && (

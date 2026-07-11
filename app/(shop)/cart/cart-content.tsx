@@ -319,7 +319,7 @@ export function CartPageContent({
                           <IconTrash className="size-3" />
                         </Button>
                       </div>
-                      <span className="font-semibold">
+                      <span className="font-semibold text-primary">
                         ৳ {(item.price * item.quantity).toLocaleString()}
                       </span>
                     </div>
@@ -352,7 +352,7 @@ export function CartPageContent({
               <Separator />
               <div className="flex justify-between font-semibold">
                 <span>Total</span>
-                <span>৳ {total.toLocaleString()}</span>
+                <span className="text-primary">৳ {total.toLocaleString()}</span>
               </div>
               <Button asChild size="lg" className="mt-2 w-full">
                 <Link href="/checkout">Proceed to Checkout</Link>

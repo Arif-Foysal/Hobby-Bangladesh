@@ -76,7 +76,7 @@ export async function RelatedProducts({
                     {product.name}
                   </h3>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="font-semibold">
+                    <span className="font-semibold text-primary">
                       ৳ {product.price.toLocaleString()}
                     </span>
                     {hasDiscount && (

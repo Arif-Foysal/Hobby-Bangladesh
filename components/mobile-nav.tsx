@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { IconMenu, IconUser } from "@tabler/icons-react";
+import { IconMenu, IconUser, IconHome, IconShoppingBag, IconShoppingCart, IconPackage } from "@tabler/icons-react";
 import { createClient } from "@/lib/supabase/client";
 import { BrandLogo } from "./brand-logo";
 import { Separator } from "@/components/ui/separator";
@@ -44,24 +44,37 @@ export function MobileNav() {
           <Link
             href="/"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >
+            <IconHome className="size-4" />
             Home
           </Link>
           <Link
             href="/products"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >
+            <IconShoppingBag className="size-4" />
             Products
           </Link>
           <Link
             href="/cart"
             onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >
+            <IconShoppingCart className="size-4" />
             Cart
           </Link>
+          {isLoggedIn && (
+            <Link
+              href="/account/orders"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            >
+              <IconPackage className="size-4" />
+              Orders
+            </Link>
+          )}
           <Separator className="my-2" />
           <Link
             href={isLoggedIn ? "/account/orders" : "/auth/login"}

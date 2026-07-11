@@ -9,6 +9,7 @@ const PUBLIC_PATHS = [
   "/checkout",
   "/auth",
   "/login",
+  "/api/search",
 ];
 
 function isPublicPath(pathname: string): boolean {

@@ -123,7 +123,7 @@ export default async function OrderDetailPage({
             <Separator />
             <div className="flex justify-between font-semibold">
               <span>Total</span>
-              <span>৳ {order.total.toLocaleString()}</span>
+              <span className="text-primary">৳ {order.total.toLocaleString()}</span>
             </div>
           </div>
         </CardContent>

@@ -6,7 +6,7 @@ import { CartButton } from "./cart-button";
 import { MobileNav } from "./mobile-nav";
 import { HeaderSearch } from "./header-search";
 import { Button } from "@/components/ui/button";
-import { IconUser } from "@tabler/icons-react";
+import { IconUser, IconPackage, IconShoppingBag } from "@tabler/icons-react";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -23,7 +23,7 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 lg:px-6">
         <MobileNav />
 
@@ -32,15 +32,27 @@ export async function SiteHeader() {
         <nav className="hidden items-center gap-1 md:flex">
           <Link
             href="/products"
-            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
+            <IconShoppingBag className="size-4" />
             Products
           </Link>
+          {isLoggedIn && (
+            <Link
+              href="/account/orders"
+              className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <IconPackage className="size-4" />
+              Orders
+            </Link>
+          )}
         </nav>
 
         <div className="flex-1" />
 
-        <HeaderSearch />
+        <div className="hidden md:block">
+          <HeaderSearch />
+        </div>
 
         <div className="flex items-center gap-1">
           {isLoggedIn ? (
@@ -61,6 +73,11 @@ export async function SiteHeader() {
           <SiteThemeToggle />
           <CartButton serverCartCount={cartCount} />
         </div>
+      </div>
+
+      {/* Mobile search - below navbar */}
+      <div className="border-t px-4 py-2 md:hidden">
+        <HeaderSearch />
       </div>
     </header>
   );

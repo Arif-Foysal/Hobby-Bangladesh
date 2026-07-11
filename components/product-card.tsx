@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { IconStarFilled, IconPhotoOff } from "@tabler/icons-react";
 import type { ProductImage } from "@/lib/database/types";
 
@@ -28,8 +29,8 @@ export function ProductCard({
   const hasDiscount = compareAt && compareAt > price;
 
   return (
-    <Link href={`/products/${slug}`} className="group">
-      <Card className="overflow-hidden border-0 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+    <Card className="group flex h-full flex-col overflow-hidden border-0 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+      <Link href={`/products/${slug}`} className="flex h-full flex-col">
         <div className="relative aspect-square overflow-hidden bg-muted">
           {image?.url ? (
             <Image
@@ -49,13 +50,13 @@ export function ProductCard({
             </Badge>
           )}
         </div>
-        <CardContent className="p-3">
+        <CardContent className="flex flex-1 flex-col p-3">
           {categoryName && (
             <p className="text-xs text-muted-foreground">{categoryName}</p>
           )}
           <h3 className="mt-0.5 truncate text-sm font-medium">{name}</h3>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-semibold">৳ {price.toLocaleString()}</span>
+            <span className="font-semibold text-primary">৳ {price.toLocaleString()}</span>
             {hasDiscount && (
               <span className="text-sm text-muted-foreground line-through">
                 ৳ {compareAt.toLocaleString()}
@@ -79,8 +80,13 @@ export function ProductCard({
               )}
             </div>
           ) : null}
+          <div className="mt-auto pt-3">
+            <Button size="sm" className="w-full" asChild>
+              <Link href={`/products/${slug}`}>Order Now</Link>
+            </Button>
+          </div>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 }

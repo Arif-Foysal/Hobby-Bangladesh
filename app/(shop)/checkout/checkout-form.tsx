@@ -17,12 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createOrder, validateCoupon } from "./actions";
 import { clearGuestCart } from "@/lib/cart";
 import { toast } from "sonner";
 import {
-  IconCreditCard,
   IconBuildingBank,
   IconLoader2,
   IconTag,
@@ -72,7 +70,7 @@ export function CheckoutForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<string>("sslcommerz");
+  const [paymentMethod] = useState<string>("cod");
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -248,46 +246,15 @@ export function CheckoutForm({
               <CardTitle className="text-sm">Payment Method</CardTitle>
             </CardHeader>
             <CardContent>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={setPaymentMethod}
-                className="flex flex-col gap-2"
-              >
-                <Label
-                  htmlFor="sslcommerz"
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                    paymentMethod === "sslcommerz"
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <RadioGroupItem value="sslcommerz" id="sslcommerz" />
-                  <IconCreditCard className="size-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Online Payment</p>
-                    <p className="text-xs text-muted-foreground">
-                      Cards, bKash, Nagad, Rocket via SSLCommerz
-                    </p>
-                  </div>
-                </Label>
-                <Label
-                  htmlFor="cod"
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                    paymentMethod === "cod"
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <RadioGroupItem value="cod" id="cod" />
-                  <IconBuildingBank className="size-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Cash on Delivery</p>
-                    <p className="text-xs text-muted-foreground">
-                      Pay when you receive
-                    </p>
-                  </div>
-                </Label>
-              </RadioGroup>
+              <div className="flex items-center gap-3 rounded-lg border border-primary bg-primary/5 p-3">
+                <IconBuildingBank className="size-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Cash on Delivery</p>
+                  <p className="text-xs text-muted-foreground">
+                    Pay when you receive
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -428,7 +395,7 @@ export function CheckoutForm({
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>৳ {total.toLocaleString()}</span>
+                <span className="text-primary">৳ {total.toLocaleString()}</span>
               </div>
             </CardContent>
 
