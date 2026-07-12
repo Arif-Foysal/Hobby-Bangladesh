@@ -24,7 +24,7 @@ export async function ProductReviews({
     : 0;
 
   return (
-    <section className="mt-12">
+    <section className="mx-4 mt-12 lg:mx-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Customer Reviews</h2>

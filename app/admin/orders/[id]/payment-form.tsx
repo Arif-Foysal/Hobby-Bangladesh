@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { updatePaymentStatus } from "../actions";
+import { fireConfetti } from "@/lib/confetti";
 
 export function PaymentStatusForm({
   orderId,
@@ -33,6 +34,7 @@ export function PaymentStatusForm({
       toast.error(result.error);
     } else {
       toast.success(`Payment status updated to ${status}`);
+      if (status === "paid") fireConfetti();
       router.refresh();
     }
   };

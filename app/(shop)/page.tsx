@@ -184,11 +184,13 @@ export default async function HomePage() {
                 key={product.id}
                 name={product.name}
                 slug={product.slug}
+                productId={product.id}
                 price={product.price}
                 compareAt={product.compare_at}
                 images={Array.isArray(product.images) ? product.images : []}
                 categoryName={product.categories?.name}
                 ratingAvg={product.rating_avg}
+                stockQty={product.stock_qty}
               />
             ))}
           </div>

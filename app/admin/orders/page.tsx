@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -13,18 +12,10 @@ import {
 import { getAdminOrders } from "./actions";
 import { DataTableToolbar } from "@/components/admin/data-table-toolbar";
 import { DataTablePagination } from "@/components/admin/data-table-pagination";
+import { OrderQuickActions } from "./order-quick-actions";
 import { IconEye } from "@tabler/icons-react";
 
 export const metadata = { title: "Orders | Admin | Hobby Bangladesh" };
-
-const statusColors: Record<string, string> = {
-  pending: "secondary",
-  confirmed: "default",
-  processing: "default",
-  shipped: "default",
-  delivered: "default",
-  cancelled: "destructive",
-};
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -105,8 +96,7 @@ export default async function AdminOrdersPage({
                 <TableHead>Order</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Payment</TableHead>
+                <TableHead>Status / Payment</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead className="w-[60px]"></TableHead>
               </TableRow>
@@ -114,7 +104,7 @@ export default async function AdminOrdersPage({
             <TableBody>
               {orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                     {search ? "No orders match your search." : "No orders yet."}
                   </TableCell>
                 </TableRow>
@@ -131,14 +121,11 @@ export default async function AdminOrdersPage({
                       {new Date(order.created_at).toLocaleDateString("en-BD")}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusColors[order.status] as "default" | "secondary" | "destructive"}>
-                        {order.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={order.payment_status === "paid" ? "default" : "secondary"}>
-                        {order.payment_status}
-                      </Badge>
+                      <OrderQuickActions
+                        orderId={order.id}
+                        currentStatus={order.status}
+                        currentPaymentStatus={order.payment_status}
+                      />
                     </TableCell>
                     <TableCell className="text-right">
                       ৳ {order.total.toLocaleString()}

@@ -5,26 +5,30 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { BuyNowButton } from "@/components/buy-now-button";
 import { IconStarFilled, IconPhotoOff, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import type { ProductImage } from "@/lib/database/types";
 
 export function ProductCard({
   name,
   slug,
+  productId,
   price,
   compareAt,
   images,
   categoryName,
   ratingAvg,
+  stockQty,
 }: {
   name: string;
   slug: string;
+  productId: string;
   price: number;
   compareAt: number | null;
   images: ProductImage[];
   categoryName?: string | null;
   ratingAvg?: number | null;
+  stockQty: number;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const image = images[activeIndex] ?? images[0] ?? null;
@@ -118,9 +122,12 @@ export function ProductCard({
           </div>
         )}
         <div className="mt-auto pt-3">
-          <Button size="sm" className="w-full" asChild>
-            <Link href={`/products/${slug}`}>Order Now</Link>
-          </Button>
+          <BuyNowButton
+            productId={productId}
+            stockQty={stockQty}
+            size="sm"
+            className="w-full"
+          />
         </div>
       </CardContent>
     </Card>

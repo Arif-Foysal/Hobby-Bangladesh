@@ -8,6 +8,8 @@ export const metadata = {
   title: "Order Confirmed | Hobby Bangladesh",
 };
 
+import { ConfettiOnMount } from "@/components/confetti";
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
@@ -18,6 +20,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div className="flex min-h-screen flex-col">
+      <ConfettiOnMount />
       <header className="mx-auto flex w-full max-w-7xl items-center px-4 py-4 lg:px-6">
         <BrandLogo />
       </header>

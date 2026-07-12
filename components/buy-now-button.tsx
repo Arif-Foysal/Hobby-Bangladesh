@@ -13,10 +13,14 @@ export function BuyNowButton({
   productId,
   stockQty,
   quantity = 1,
+  size = "lg",
+  className,
 }: {
   productId: string;
   stockQty: number;
   quantity?: number;
+  size?: "sm" | "lg" | "default";
+  className?: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -46,10 +50,11 @@ export function BuyNowButton({
 
   return (
     <Button
-      size="lg"
+      size={size}
       variant="secondary"
       disabled={disabled}
       onClick={handleBuyNow}
+      className={className}
     >
       <IconShoppingBag />
       {stockQty <= 0 ? "Out of Stock" : loading ? "Processing..." : "Buy Now"}

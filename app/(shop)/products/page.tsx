@@ -102,11 +102,13 @@ export default async function ProductsPage({
                 key={product.id}
                 name={product.name}
                 slug={product.slug}
+                productId={product.id}
                 price={product.price}
                 compareAt={product.compare_at}
                 images={Array.isArray(product.images) ? product.images : []}
                 categoryName={product.categories?.name}
                 ratingAvg={product.rating_avg}
+                stockQty={product.stock_qty}
               />
             ))}
           </div>
@@ -192,6 +194,7 @@ export default async function ProductsPage({
                 key={product.id}
                 name={product.name}
                 slug={product.slug}
+                productId={product.id}
                 price={product.price}
                 compareAt={product.compare_at}
                 images={
@@ -199,6 +202,7 @@ export default async function ProductsPage({
                 }
                 categoryName={product.categories?.name}
                 ratingAvg={product.rating_avg}
+                stockQty={product.stock_qty}
               />
             ))}
           </div>
