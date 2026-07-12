@@ -109,7 +109,7 @@ export function ProductCard({
           )}
           <span className="text-base font-semibold text-primary">৳ {price.toLocaleString()}</span>
         </div>
-        {ratingAvg && ratingAvg > 0 && (
+        {ratingAvg != null && ratingAvg > 0 && (
           <div className="mt-1 flex items-center gap-1">
             <IconStarFilled className="size-3.5 text-yellow-500" />
             <span className="text-xs text-muted-foreground">
