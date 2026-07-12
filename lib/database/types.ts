@@ -36,6 +36,19 @@ export interface ProductAttribute {
   values: string[];
 }
 
+export interface ProductFeature {
+  icon: string;
+  title: string;
+  text: string;
+}
+
+export interface LandingPageContent {
+  hero_subtitle?: string;
+  hero_image_url?: string;
+  faq_items?: { question: string; answer: string }[];
+  landing_description?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -51,6 +64,9 @@ export interface Product {
   category_id: string | null;
   images: ProductImage[];
   attributes: Record<string, string[]>;
+  features: ProductFeature[];
+  landing_page_enabled: boolean;
+  landing_page_sections: LandingPageContent;
   rating_avg: number;
   sold_count: number;
   created_at: string;

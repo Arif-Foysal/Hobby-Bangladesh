@@ -136,6 +136,7 @@ export default async function HomePage() {
                       src={cat.image_url || PLACEHOLDER_IMG}
                       alt={cat.name}
                       fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -188,7 +189,6 @@ export default async function HomePage() {
                 images={Array.isArray(product.images) ? product.images : []}
                 categoryName={product.categories?.name}
                 ratingAvg={product.rating_avg}
-                soldCount={product.sold_count}
               />
             ))}
           </div>

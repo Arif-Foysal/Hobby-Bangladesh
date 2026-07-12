@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoleManager } from "./role-manager";
+import { EditProfileForm } from "./edit-profile-form";
 import { IconArrowLeft, IconStarFilled } from "@tabler/icons-react";
 import {
   Table,
@@ -90,17 +91,31 @@ export default async function CustomerDetailPage({
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Role Management</CardTitle>
+            <CardTitle className="text-sm">Edit Profile</CardTitle>
           </CardHeader>
           <CardContent>
-            <RoleManager userId={profile.id} currentRole={profile.role} />
+            <EditProfileForm
+              userId={profile.id}
+              currentName={profile.name}
+              currentPhone={profile.phone}
+            />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Addresses</CardTitle>
-          </CardHeader>
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Role Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RoleManager userId={profile.id} currentRole={profile.role} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Addresses</CardTitle>
+            </CardHeader>
           <CardContent>
             {addresses.length === 0 ? (
               <p className="text-sm text-muted-foreground">No addresses saved.</p>
@@ -134,6 +149,7 @@ export default async function CustomerDetailPage({
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
 
       <Card>

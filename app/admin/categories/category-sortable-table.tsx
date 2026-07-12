@@ -86,6 +86,7 @@ function SortableRow({
             src={category.image_url || PLACEHOLDER_IMG}
             alt={category.name}
             fill
+            sizes="40px"
             className="object-cover"
           />
         </div>

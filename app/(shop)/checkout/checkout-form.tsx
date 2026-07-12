@@ -291,6 +291,7 @@ export function CheckoutForm({
                         src={item.image}
                         alt={item.name}
                         fill
+                        sizes="56px"
                         className="object-cover"
                       />
                     ) : (

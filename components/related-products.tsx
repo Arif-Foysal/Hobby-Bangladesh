@@ -50,6 +50,7 @@ export async function RelatedProducts({
                     src={image?.url || ""}
                     alt={product.name}
                     fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {!image?.url && (
@@ -76,14 +77,14 @@ export async function RelatedProducts({
                     {product.name}
                   </h3>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="font-semibold text-primary">
-                      ৳ {product.price.toLocaleString()}
-                    </span>
                     {hasDiscount && (
                       <span className="text-sm text-muted-foreground line-through">
                         ৳ {product.compare_at!.toLocaleString()}
                       </span>
                     )}
+                    <span className="font-semibold text-primary">
+                      ৳ {product.price.toLocaleString()}
+                    </span>
                   </div>
                 </CardContent>
               </Card>

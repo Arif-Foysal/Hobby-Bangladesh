@@ -6,20 +6,31 @@ import { CartButton } from "./cart-button";
 import { MobileNav } from "./mobile-nav";
 import { HeaderSearch } from "./header-search";
 import { Button } from "@/components/ui/button";
-import { IconUser, IconPackage, IconShoppingBag } from "@tabler/icons-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { IconUser, IconPackage, IconShoppingBag, IconDashboard } from "@tabler/icons-react";
+import { SignOutButton } from "./sign-out-button";
 
 export async function SiteHeader() {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
   const isLoggedIn = !!authData?.claims;
 
+  let isAdmin = false;
   let cartCount = 0;
+
   if (isLoggedIn) {
-    const { count } = await supabase
-      .from("carts")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", authData.claims.sub);
-    cartCount = count || 0;
+    const [profileRes, cartRes] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", authData.claims.sub).single(),
+      supabase.from("carts").select("*", { count: "exact", head: true }).eq("user_id", authData.claims.sub),
+    ]);
+    isAdmin = profileRes.data?.role === "admin";
+    cartCount = cartRes.count || 0;
   }
 
   return (
@@ -46,6 +57,15 @@ export async function SiteHeader() {
               Orders
             </Link>
           )}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+            >
+              <IconDashboard className="size-4" />
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex-1" />
@@ -56,12 +76,35 @@ export async function SiteHeader() {
 
         <div className="flex items-center gap-1">
           {isLoggedIn ? (
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/account/orders">
-                <IconUser className="size-5" />
-                <span className="sr-only">Account</span>
-              </Link>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <IconUser className="size-5" />
+                  <span className="sr-only">Account</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {isAdmin && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center gap-2">
+                        <IconDashboard className="size-4" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link href="/account/orders" className="flex items-center gap-2">
+                    <IconPackage className="size-4" />
+                    My Orders
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <SignOutButton />
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button variant="ghost" size="sm" asChild className="hidden md:flex">
               <Link href="/auth/login">

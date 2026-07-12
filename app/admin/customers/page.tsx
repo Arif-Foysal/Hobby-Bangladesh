@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTableToolbar } from "@/components/admin/data-table-toolbar";
 import { DataTablePagination } from "@/components/admin/data-table-pagination";
-import { IconEye } from "@tabler/icons-react";
+import { IconEye, IconPlus } from "@tabler/icons-react";
 
 export const metadata = { title: "Customers | Admin | Hobby Bangladesh" };
 
@@ -87,11 +87,18 @@ export default async function CustomersPage({
 
   return (
     <>
-      <div className="px-4 lg:px-6">
-        <h2 className="text-2xl font-bold tracking-tight">Customers</h2>
-        <p className="text-muted-foreground">
-          {total} registered user{total !== 1 ? "s" : ""}.
-        </p>
+      <div className="flex items-center justify-between px-4 lg:px-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Customers</h2>
+          <p className="text-muted-foreground">
+            {total} registered user{total !== 1 ? "s" : ""}.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/admin/customers/new">
+            <IconPlus className="mr-1 size-4" /> Create User
+          </Link>
+        </Button>
       </div>
 
       <div className="px-4 lg:px-6">

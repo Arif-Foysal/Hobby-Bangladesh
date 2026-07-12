@@ -19,15 +19,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createProduct, updateProduct, uploadProductImage } from "./actions";
-import { IconX, IconPhoto } from "@tabler/icons-react";
+import { IconX, IconPhoto, IconPlus, IconTrash } from "@tabler/icons-react";
 import { toast } from "sonner";
-import type { Category, ProductImage } from "@/lib/database/types";
+import type { Category, ProductImage, ProductFeature } from "@/lib/database/types";
 
 function slugify(text: string) {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+interface LandingPageContent {
+  hero_subtitle?: string;
+  hero_image_url?: string;
+  faq_items?: FaqItem[];
+  landing_description?: string;
 }
 
 interface ProductData {
@@ -44,6 +56,9 @@ interface ProductData {
   is_active: boolean;
   category_id: string | null;
   images: ProductImage[];
+  features?: ProductFeature[];
+  landing_page_enabled?: boolean;
+  landing_page_sections?: LandingPageContent;
 }
 
 export function ProductForm({
@@ -55,13 +70,23 @@ export function ProductForm({
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const heroImageInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(product?.name ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(!!product);
   const [images, setImages] = useState<ProductImage[]>(product?.images ?? []);
+  const [features, setFeatures] = useState<ProductFeature[]>(product?.features ?? []);
   const [uploading, setUploading] = useState(false);
+
+  const existingContent = (product?.landing_page_sections as LandingPageContent) ?? {};
+  const [landingPageEnabled, setLandingPageEnabled] = useState(product?.landing_page_enabled ?? false);
+  const [heroSubtitle, setHeroSubtitle] = useState(existingContent.hero_subtitle ?? "");
+  const [heroImageUrl, setHeroImageUrl] = useState(existingContent.hero_image_url ?? "");
+  const [landingDescription, setLandingDescription] = useState(existingContent.landing_description ?? "");
+  const [faqItems, setFaqItems] = useState<FaqItem[]>(existingContent.faq_items ?? []);
+  const [heroUploading, setHeroUploading] = useState(false);
 
   const handleNameChange = (value: string) => {
     setName(value);
@@ -100,8 +125,37 @@ export function ProductForm({
     }
   };
 
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setHeroUploading(true);
+    const result = await uploadProductImage(file, product?.id ?? "temp");
+    if (result.error) {
+      toast.error(result.error);
+    } else if (result.url) {
+      setHeroImageUrl(result.url);
+    }
+    setHeroUploading(false);
+    if (heroImageInputRef.current) heroImageInputRef.current.value = "";
+  };
+
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addFaqItem = () => {
+    setFaqItems([...faqItems, { question: "", answer: "" }]);
+  };
+
+  const updateFaqItem = (index: number, field: "question" | "answer", value: string) => {
+    const next = [...faqItems];
+    next[index] = { ...next[index], [field]: value };
+    setFaqItems(next);
+  };
+
+  const removeFaqItem = (index: number) => {
+    setFaqItems(faqItems.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,6 +168,17 @@ export function ProductForm({
       formData.set("slug", slugify(name));
     }
     formData.set("images", JSON.stringify(images));
+    formData.set("features", JSON.stringify(features));
+    formData.set("landing_page_enabled", String(landingPageEnabled));
+    formData.set(
+      "landing_page_sections",
+      JSON.stringify({
+        hero_subtitle: heroSubtitle || undefined,
+        hero_image_url: heroImageUrl || undefined,
+        faq_items: faqItems.length > 0 ? faqItems : undefined,
+        landing_description: landingDescription || undefined,
+      })
+    );
 
     const result = product
       ? await updateProduct(product.id, formData)
@@ -419,6 +484,7 @@ export function ProductForm({
                   src={img.url}
                   alt={img.alt ?? ""}
                   fill
+                  sizes="100px"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
@@ -466,6 +532,197 @@ export function ProductForm({
           <p className="text-xs text-muted-foreground">
             JPEG, PNG, or WebP. Max 5MB per image.
           </p>
+        </div>
+
+        <div className="flex flex-col gap-4 rounded-lg border p-4">
+          <div>
+            <h3 className="text-sm font-medium">Key Features</h3>
+            <p className="text-xs text-muted-foreground">
+              Highlight 2-4 key selling points shown on the product page.
+            </p>
+          </div>
+          <Separator />
+          {features.map((f, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+                <Select
+                  value={f.icon}
+                  onValueChange={(v) => {
+                    const next = [...features];
+                    next[i] = { ...next[i], icon: v };
+                    setFeatures(next);
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["rocket", "shield", "tools", "package"].map((icon) => (
+                      <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  placeholder="Title"
+                  value={f.title}
+                  onChange={(e) => {
+                    const next = [...features];
+                    next[i] = { ...next[i], title: e.target.value };
+                    setFeatures(next);
+                  }}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Short description"
+                  value={f.text}
+                  onChange={(e) => {
+                    const next = [...features];
+                    next[i] = { ...next[i], text: e.target.value };
+                    setFeatures(next);
+                  }}
+                  className="flex-1"
+                />
+              </div>
+              <Button type="button" size="icon" variant="ghost" className="mt-0.5 size-8 shrink-0" onClick={() => setFeatures(features.filter((_, idx) => idx !== i))}>
+                <IconTrash className="size-4" />
+              </Button>
+            </div>
+          ))}
+          {features.length < 4 && (
+            <Button type="button" size="sm" variant="outline" onClick={() => setFeatures([...features, { icon: "rocket", title: "", text: "" }])}>
+              <IconPlus className="mr-1 size-3" /> Add Feature
+            </Button>
+          )}
+        </div>
+
+        {/* ── Landing Page ─────────────────────────────── */}
+        <div className="flex flex-col gap-4 rounded-lg border p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium">Landing Page</h3>
+              <p className="text-xs text-muted-foreground">
+                Enable a high-converting landing page at{" "}
+                <span className="text-foreground">/products/{slug}/landing</span>
+              </p>
+            </div>
+            <Switch
+              checked={landingPageEnabled}
+              onCheckedChange={setLandingPageEnabled}
+            />
+          </div>
+
+          {landingPageEnabled && (
+            <>
+              <Separator />
+
+              <div className="flex flex-col gap-2">
+                <Label>Hero Subtitle</Label>
+                <Input
+                  placeholder="e.g. Handcrafted Artisan Piece"
+                  value={heroSubtitle}
+                  onChange={(e) => setHeroSubtitle(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Small text above the product title in the hero section.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Hero Image Override</Label>
+                {heroImageUrl ? (
+                  <div className="group relative aspect-[21/9] overflow-hidden rounded-lg border">
+                    <Image
+                      src={heroImageUrl}
+                      alt="Hero"
+                      fill
+                      sizes="100vw"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => heroImageInputRef.current?.click()}
+                      >
+                        Replace
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex aspect-[21/9] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/50">
+                    <input
+                      ref={heroImageInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleHeroImageUpload}
+                      disabled={heroUploading}
+                    />
+                    {heroUploading ? (
+                      <div className="size-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                    ) : (
+                      <>
+                        <IconPhoto className="size-6" />
+                        <span className="text-xs font-medium">Upload Hero Image</span>
+                      </>
+                    )}
+                  </label>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Optional. Overrides the first product image in the hero section.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Landing Page Description</Label>
+                <Textarea
+                  placeholder="Rich product description for the landing page (HTML supported)..."
+                  rows={5}
+                  value={landingDescription}
+                  onChange={(e) => setLandingDescription(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Shown in the &quot;About This Product&quot; section. Falls back to the main description.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <Label>FAQ Items</Label>
+                  <Button type="button" size="sm" variant="outline" onClick={addFaqItem}>
+                    <IconPlus className="mr-1 size-3" /> Add FAQ
+                  </Button>
+                </div>
+                {faqItems.map((item, i) => (
+                  <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Q{i + 1}</span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="size-6"
+                        onClick={() => removeFaqItem(i)}
+                      >
+                        <IconTrash className="size-3" />
+                      </Button>
+                    </div>
+                    <Input
+                      placeholder="Question"
+                      value={item.question}
+                      onChange={(e) => updateFaqItem(i, "question", e.target.value)}
+                    />
+                    <Textarea
+                      placeholder="Answer"
+                      rows={2}
+                      value={item.answer}
+                      onChange={(e) => updateFaqItem(i, "answer", e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </form>

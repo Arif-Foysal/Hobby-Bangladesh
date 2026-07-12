@@ -267,6 +267,7 @@ export function HeaderSearch() {
                           src={image.url}
                           alt={item.name}
                           fill
+                          sizes="40px"
                           className="object-cover"
                         />
                       ) : (
@@ -288,14 +289,14 @@ export function HeaderSearch() {
                       </p>
                     </div>
                     <div className="flex items-baseline gap-1 text-sm">
-                      <span className="font-semibold text-primary">
-                        ৳ {item.price.toLocaleString()}
-                      </span>
                       {hasDiscount && (
                         <span className="text-xs text-muted-foreground line-through">
                           ৳ {item.compare_at!.toLocaleString()}
                         </span>
                       )}
+                      <span className="font-semibold text-primary">
+                        ৳ {item.price.toLocaleString()}
+                      </span>
                     </div>
                   </Link>
                 );

@@ -268,6 +268,11 @@ export async function createProduct(formData: FormData) {
 
   const imagesJson = formData.get("images") as string;
   const images = imagesJson ? JSON.parse(imagesJson) : [];
+  const featuresJson = formData.get("features") as string;
+  const features = featuresJson ? JSON.parse(featuresJson) : [];
+  const landingPageEnabled = formData.get("landing_page_enabled") === "true";
+  const landingPageSectionsJson = formData.get("landing_page_sections") as string;
+  const landingPageSections = landingPageSectionsJson ? JSON.parse(landingPageSectionsJson) : {};
 
   const { data, error } = await supabase
     .from("products")
@@ -284,6 +289,9 @@ export async function createProduct(formData: FormData) {
       category_id: categoryId && categoryId !== "none" ? categoryId : null,
       is_active: isActive,
       images,
+      features,
+      landing_page_enabled: landingPageEnabled,
+      landing_page_sections: landingPageSections,
     })
     .select("id")
     .single();
@@ -323,6 +331,11 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const imagesJson = formData.get("images") as string;
   const images = imagesJson ? JSON.parse(imagesJson) : [];
+  const featuresJson = formData.get("features") as string;
+  const features = featuresJson ? JSON.parse(featuresJson) : [];
+  const landingPageEnabled = formData.get("landing_page_enabled") === "true";
+  const landingPageSectionsJson = formData.get("landing_page_sections") as string;
+  const landingPageSections = landingPageSectionsJson ? JSON.parse(landingPageSectionsJson) : {};
 
   const { error } = await supabase
     .from("products")
@@ -339,6 +352,9 @@ export async function updateProduct(id: string, formData: FormData) {
       category_id: categoryId && categoryId !== "none" ? categoryId : null,
       is_active: isActive,
       images,
+      features,
+      landing_page_enabled: landingPageEnabled,
+      landing_page_sections: landingPageSections,
     })
     .eq("id", id);
 

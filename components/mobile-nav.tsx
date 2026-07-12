@@ -10,21 +10,43 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { IconMenu, IconUser, IconHome, IconShoppingBag, IconShoppingCart, IconPackage } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { IconMenu, IconUser, IconHome, IconShoppingBag, IconShoppingCart, IconPackage, IconDashboard, IconLogout } from "@tabler/icons-react";
 import { createClient } from "@/lib/supabase/client";
 import { BrandLogo } from "./brand-logo";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getClaims().then(({ data }) => {
-      setIsLoggedIn(!!data?.claims);
+    supabase.auth.getClaims().then(async ({ data }) => {
+      const loggedIn = !!data?.claims;
+      setIsLoggedIn(loggedIn);
+      if (loggedIn && data?.claims?.sub) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.claims.sub)
+          .single();
+        setIsAdmin(profile?.role === "admin");
+      }
     });
   }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setOpen(false);
+    toast.success("Signed out");
+    router.push("/auth/login");
+    router.refresh();
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -75,15 +97,45 @@ export function MobileNav() {
               Orders
             </Link>
           )}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+            >
+              <IconDashboard className="size-4" />
+              Admin Dashboard
+            </Link>
+          )}
           <Separator className="my-2" />
-          <Link
-            href={isLoggedIn ? "/account/orders" : "/auth/login"}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-          >
-            <IconUser className="size-4" />
-            {isLoggedIn ? "My Account" : "Sign In"}
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link
+                href="/account/orders"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+              >
+                <IconUser className="size-4" />
+                My Account
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
+              >
+                <IconLogout className="size-4" />
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/auth/login"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            >
+              <IconUser className="size-4" />
+              Sign In
+            </Link>
+          )}
         </nav>
       </SheetContent>
     </Sheet>

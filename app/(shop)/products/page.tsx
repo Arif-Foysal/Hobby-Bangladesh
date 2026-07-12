@@ -107,7 +107,6 @@ export default async function ProductsPage({
                 images={Array.isArray(product.images) ? product.images : []}
                 categoryName={product.categories?.name}
                 ratingAvg={product.rating_avg}
-                soldCount={product.sold_count}
               />
             ))}
           </div>
@@ -200,7 +199,6 @@ export default async function ProductsPage({
                 }
                 categoryName={product.categories?.name}
                 ratingAvg={product.rating_avg}
-                soldCount={product.sold_count}
               />
             ))}
           </div>

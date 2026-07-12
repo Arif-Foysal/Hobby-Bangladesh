@@ -39,6 +39,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
             src={active.url}
             alt={active.alt ?? "Product image"}
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"
             priority
           />
@@ -59,6 +60,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
                   src={img.url}
                   alt={img.alt ?? `Thumbnail ${i + 1}`}
                   fill
+                  sizes="96px"
                   className="object-cover"
                 />
               </button>
@@ -75,6 +77,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
               src={active.url}
               alt={active.alt ?? "Product image"}
               fill
+              sizes="100vw"
               className="object-contain"
             />
             {images.length > 1 && (

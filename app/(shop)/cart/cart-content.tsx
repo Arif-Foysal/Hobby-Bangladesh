@@ -246,6 +246,7 @@ export function CartPageContent({
                         src={item.image.url}
                         alt={item.name}
                         fill
+                        sizes="96px"
                         className="object-cover"
                       />
                     ) : (

@@ -108,6 +108,7 @@ function SortableSlide({
             src={slide.image_url}
             alt={slide.title ?? `Slide ${index + 1}`}
             fill
+            sizes="200px"
             className="object-cover"
           />
           <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">

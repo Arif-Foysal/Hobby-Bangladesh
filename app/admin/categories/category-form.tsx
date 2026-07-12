@@ -268,6 +268,7 @@ export function CategoryForm({
                   src={imageUrl}
                   alt={name || "Category"}
                   fill
+                  sizes="100vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
