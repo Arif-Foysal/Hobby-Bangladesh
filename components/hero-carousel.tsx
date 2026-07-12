@@ -27,7 +27,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
       <CarouselContent>
         {slides.map((slide, i) => (
           <CarouselItem key={i}>
-            <div className="relative h-[45vh] min-h-[300px] w-full overflow-hidden md:h-[56vh] lg:h-[64vh]">
+            <div className="relative h-[30vh] min-h-[200px] w-full overflow-hidden md:h-[50vh] lg:h-[60vh]">
               <Image
                 src={slide.image_url}
                 alt={slide.title ?? `Slide ${i + 1}`}

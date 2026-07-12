@@ -14,7 +14,7 @@ export async function SiteFooter() {
           <div>
             <BrandLogo />
             <p className="mt-2 text-sm text-muted-foreground">
-              Your destination for hobby products in Bangladesh.
+              Hobby Bangladesh provides the best craft supplies in Bangladesh. Here, you can buy pre-made art materials like pre-marked MDF bases, wooden bases, kids room decor, home accessories, personalized lamps, Mirror, Lippon Art and much more.
             </p>
           </div>
 
