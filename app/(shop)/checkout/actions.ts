@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin-client";
 import { revalidatePath } from "next/cache";
 import { getStoreSetting } from "@/lib/supabase/store";
 
@@ -60,7 +61,11 @@ export async function validateCoupon(code: string, subtotal: number) {
 }
 
 export async function createOrder(formData: FormData) {
-  const supabase = await createClient();
+  const authClient = await createClient();
+  const { data: authData } = await authClient.auth.getClaims();
+  const userId = authData?.claims?.sub ?? null;
+
+  const admin = createAdminClient();
 
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
@@ -82,7 +87,7 @@ export async function createOrder(formData: FormData) {
   if (cartItems.length === 0) return { error: "Cart is empty" };
 
   const productIds = cartItems.map((item) => item.productId);
-  const { data: products } = await supabase
+  const { data: products } = await admin
     .from("products")
     .select("id, name, price, stock_qty, sold_count, is_active")
     .in("id", productIds);
@@ -101,9 +106,6 @@ export async function createOrder(formData: FormData) {
     }
   }
 
-  const { data: authData } = await supabase.auth.getClaims();
-  const userId = authData?.claims?.sub ?? null;
-
   const shippingConfig = await getStoreSetting("shipping");
   const subtotal = cartItems.reduce((sum, item) => {
     const product = productMap.get(item.productId);
@@ -116,7 +118,7 @@ export async function createOrder(formData: FormData) {
 
   let finalDiscount = 0;
   if (couponId && couponCode && discountAmount > 0) {
-    const { data: coupon } = await supabase
+    const { data: coupon } = await admin
       .from("coupons")
       .select("id, is_active, expires_at, usage_limit, used_count")
       .eq("id", couponId)
@@ -138,7 +140,7 @@ export async function createOrder(formData: FormData) {
 
   const shippingAddress = { name, email, phone, division, city, area, address };
 
-  const { data: order, error: orderError } = await supabase
+  const { data: order, error: orderError } = await admin
     .from("orders")
     .insert({
       user_id: userId,
@@ -172,12 +174,12 @@ export async function createOrder(formData: FormData) {
     };
   });
 
-  await supabase.from("order_items").insert(orderItems);
+  await admin.from("order_items").insert(orderItems);
 
   for (const item of cartItems) {
     const product = productMap.get(item.productId);
     if (product) {
-      await supabase
+      await admin
         .from("products")
         .update({
           stock_qty: product.stock_qty - item.quantity,
@@ -188,16 +190,16 @@ export async function createOrder(formData: FormData) {
   }
 
   if (finalDiscount > 0 && couponId) {
-    await supabase.rpc("increment_coupon_usage", { coupon_id: couponId }).then(
+    await admin.rpc("increment_coupon_usage", { coupon_id: couponId }).then(
       () => {},
       async () => {
-        const { data: c } = await supabase
+        const { data: c } = await admin
           .from("coupons")
           .select("used_count")
           .eq("id", couponId)
           .single();
         if (c) {
-          await supabase
+          await admin
             .from("coupons")
             .update({ used_count: c.used_count + 1 })
             .eq("id", couponId);
@@ -206,9 +208,8 @@ export async function createOrder(formData: FormData) {
     );
   }
 
-  const { data: authUser } = await supabase.auth.getClaims();
-  if (authUser?.claims?.sub) {
-    await supabase.from("carts").delete().eq("user_id", authUser.claims.sub);
+  if (userId) {
+    await admin.from("carts").delete().eq("user_id", userId);
   }
 
   revalidatePath("/cart");
