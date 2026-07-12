@@ -50,8 +50,8 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  const { data } = await supabase.auth.getUser();
+  const user = data?.user;
 
   // Only redirect to login for protected paths (account, admin) when not authenticated
   if (!user && !isPublicPath(request.nextUrl.pathname)) {
