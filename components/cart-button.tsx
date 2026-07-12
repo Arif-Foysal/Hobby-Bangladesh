@@ -38,7 +38,7 @@ export function CartButton({ serverCartCount }: { serverCartCount: number }) {
         {cartCount > 0 && (
           <Badge
             variant="destructive"
-            className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full p-0 text-[10px]"
+            className="absolute -right-1.5 -top-1.5 flex size-6 items-center justify-center rounded-full p-0 text-[11px]"
           >
             {cartCount > 99 ? "99+" : cartCount}
           </Badge>

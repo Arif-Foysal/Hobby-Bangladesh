@@ -49,7 +49,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
               <button
                 key={i}
                 onClick={() => setActiveIndex(i)}
-                className={`relative size-20 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+                className={`relative size-24 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
                   i === activeIndex
                     ? "border-primary"
                     : "border-transparent hover:border-muted-foreground/25"
@@ -104,7 +104,7 @@ export function ProductGallery({ images }: { images: ProductImage[] }) {
                 <button
                   key={i}
                   onClick={() => setActiveIndex(i)}
-                  className={`size-2 rounded-full transition-colors ${
+                  className={`size-2.5 rounded-full transition-colors ${
                     i === activeIndex ? "bg-primary" : "bg-muted-foreground/30"
                   }`}
                 />

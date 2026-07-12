@@ -15,8 +15,10 @@ import { IconArrowRight } from "@tabler/icons-react";
 
 interface HeroSlide {
   image_url: string;
-  title: string | null;
-  link: string | null;
+  title?: string | null;
+  link?: string | null;
+  show_title?: boolean;
+  show_button?: boolean;
 }
 
 export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
@@ -25,7 +27,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
       <CarouselContent>
         {slides.map((slide, i) => (
           <CarouselItem key={i}>
-            <div className="relative h-[50vh] min-h-[320px] w-full overflow-hidden md:h-[60vh]">
+            <div className="relative h-[45vh] min-h-[300px] w-full overflow-hidden md:h-[56vh] lg:h-[64vh]">
               <Image
                 src={slide.image_url}
                 alt={slide.title ?? `Slide ${i + 1}`}
@@ -33,29 +35,31 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 className="object-cover"
                 priority={i === 0}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
               <div className="absolute inset-0 flex items-end">
                 <div className="mx-auto w-full max-w-7xl px-4 pb-12 lg:px-6">
-                  {slide.title && (
-                    <h1 className="text-3xl font-bold text-white drop-shadow-lg sm:text-4xl lg:text-5xl">
+                  {slide.show_title !== false && slide.title && (
+                    <h1 className="text-4xl font-bold text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
                       {slide.title}
                     </h1>
                   )}
-                  <div className="mt-4 flex gap-3">
-                    {slide.link ? (
-                      <Button asChild size="lg">
-                        <Link href={slide.link}>
-                          Shop Now <IconArrowRight />
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Button asChild size="lg">
-                        <Link href="/products">
-                          Browse Products <IconArrowRight />
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
+                  {slide.show_button !== false && (
+                    <div className="mt-4 flex gap-3">
+                      {slide.link ? (
+                        <Button asChild size="lg">
+                          <Link href={slide.link}>
+                            Shop Now <IconArrowRight />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button asChild size="lg">
+                          <Link href="/products">
+                            Browse Products <IconArrowRight />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -29,64 +29,62 @@ export function ProductCard({
   const hasDiscount = compareAt && compareAt > price;
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden border-0 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
-      <Link href={`/products/${slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-square overflow-hidden bg-muted">
-          {image?.url ? (
-            <Image
-              src={image.url}
-              alt={name}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex size-full items-center justify-center text-muted-foreground">
-              <IconPhotoOff className="size-8" />
-            </div>
-          )}
+    <Card className="group flex h-full flex-col overflow-hidden border border-border/50 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+      <Link href={`/products/${slug}`} className="block relative aspect-square overflow-hidden bg-muted">
+        {image?.url ? (
+          <Image
+            src={image.url}
+            alt={name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center text-muted-foreground">
+            <IconPhotoOff className="size-8" />
+          </div>
+        )}
+        {hasDiscount && (
+          <Badge className="absolute left-2 top-2" variant="destructive">
+            {Math.round(((compareAt - price) / compareAt) * 100)}% OFF
+          </Badge>
+        )}
+      </Link>
+      <CardContent className="flex flex-1 flex-col p-4">
+        {categoryName && (
+          <p className="text-xs text-muted-foreground">{categoryName}</p>
+        )}
+        <h3 className="mt-0.5 truncate text-sm font-medium">{name}</h3>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-base font-semibold text-primary">৳ {price.toLocaleString()}</span>
           {hasDiscount && (
-            <Badge className="absolute left-2 top-2" variant="destructive">
-              {Math.round(((compareAt - price) / compareAt) * 100)}% OFF
-            </Badge>
+            <span className="text-sm text-muted-foreground line-through">
+              ৳ {compareAt.toLocaleString()}
+            </span>
           )}
         </div>
-        <CardContent className="flex flex-1 flex-col p-3">
-          {categoryName && (
-            <p className="text-xs text-muted-foreground">{categoryName}</p>
-          )}
-          <h3 className="mt-0.5 truncate text-sm font-medium">{name}</h3>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-semibold text-primary">৳ {price.toLocaleString()}</span>
-            {hasDiscount && (
-              <span className="text-sm text-muted-foreground line-through">
-                ৳ {compareAt.toLocaleString()}
+        {(ratingAvg && ratingAvg > 0) || (soldCount && soldCount > 0) ? (
+          <div className="mt-1 flex items-center gap-1">
+            {ratingAvg && ratingAvg > 0 && (
+              <>
+                <IconStarFilled className="size-3.5 text-yellow-500" />
+                <span className="text-xs text-muted-foreground">
+                  {ratingAvg.toFixed(1)}
+                </span>
+              </>
+            )}
+            {soldCount && soldCount > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {ratingAvg && ratingAvg > 0 ? "·" : ""} {soldCount} sold
               </span>
             )}
           </div>
-          {(ratingAvg && ratingAvg > 0) || (soldCount && soldCount > 0) ? (
-            <div className="mt-1 flex items-center gap-1">
-              {ratingAvg && ratingAvg > 0 && (
-                <>
-                  <IconStarFilled className="size-3 text-yellow-500" />
-                  <span className="text-xs text-muted-foreground">
-                    {ratingAvg.toFixed(1)}
-                  </span>
-                </>
-              )}
-              {soldCount && soldCount > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  {ratingAvg && ratingAvg > 0 ? "·" : ""} {soldCount} sold
-                </span>
-              )}
-            </div>
-          ) : null}
-          <div className="mt-auto pt-3">
-            <Button size="sm" className="w-full" asChild>
-              <Link href={`/products/${slug}`}>Order Now</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Link>
+        ) : null}
+        <div className="mt-auto pt-3">
+          <Button size="sm" className="w-full" asChild>
+            <Link href={`/products/${slug}`}>Order Now</Link>
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }

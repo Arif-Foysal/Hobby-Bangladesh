@@ -123,7 +123,7 @@ export function ProductFilters({
               type="number"
               min={0}
               placeholder="0"
-              className="h-8 w-20 pl-5 text-sm"
+              className="h-10 w-24 pl-5 text-base"
               defaultValue={currentMinPrice !== undefined ? String(currentMinPrice) : ""}
               onChange={(e) => handlePriceChange("minPrice", e.target.value)}
             />
@@ -138,7 +138,7 @@ export function ProductFilters({
               type="number"
               min={0}
               placeholder="Any"
-              className="h-8 w-20 pl-5 text-sm"
+              className="h-10 w-24 pl-5 text-base"
               defaultValue={currentMaxPrice !== undefined ? String(currentMaxPrice) : ""}
               onChange={(e) => handlePriceChange("maxPrice", e.target.value)}
             />
@@ -167,7 +167,7 @@ export function ProductFilters({
         <Link
           href={pathname}
           className={cn(
-            "rounded-full px-3 py-1 text-sm transition-colors",
+            "rounded-full px-3 py-1.5 text-sm transition-colors",
             !currentCategory
               ? "bg-primary text-primary-foreground"
               : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -180,7 +180,7 @@ export function ProductFilters({
             key={cat.slug}
             href={`${pathname}?category=${cat.slug}`}
             className={cn(
-              "rounded-full px-3 py-1 text-sm transition-colors",
+              "rounded-full px-3 py-1.5 text-sm transition-colors",
               currentCategory === cat.slug
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"

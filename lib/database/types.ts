@@ -160,6 +160,8 @@ export interface HeroSlide {
   image_url: string;
   title?: string;
   link?: string;
+  show_title?: boolean;
+  show_button?: boolean;
 }
 
 export interface HeroSlidesConfig {

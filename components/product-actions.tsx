@@ -15,7 +15,7 @@ export function ProductActions({
   const [quantity, setQuantity] = useState(1);
 
   return (
-    <div className="flex flex-col gap-3 pt-2">
+    <div className="flex flex-col gap-3 pt-4">
       <QuantitySelector
         quantity={quantity}
         max={stockQty}

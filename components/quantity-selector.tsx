@@ -13,21 +13,21 @@ export function QuantitySelector({
   onChange: (qty: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       <Button
         variant="outline"
         size="icon"
-        className="size-9"
+        className="size-11"
         onClick={() => onChange(Math.max(1, quantity - 1))}
         disabled={quantity <= 1}
       >
         <IconMinus className="size-4" />
       </Button>
-      <span className="w-10 text-center text-sm font-medium">{quantity}</span>
+      <span className="w-12 text-center text-base font-semibold">{quantity}</span>
       <Button
         variant="outline"
         size="icon"
-        className="size-9"
+        className="size-11"
         onClick={() => onChange(Math.min(max, quantity + 1))}
         disabled={quantity >= max}
       >

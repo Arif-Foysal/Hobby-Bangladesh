@@ -24,7 +24,7 @@ export async function LowStockAlerts() {
         <CardTitle className="text-sm">Low Stock Alerts</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {products.map((product) => (
             <div key={product.id} className="flex items-center justify-between">
               <Link

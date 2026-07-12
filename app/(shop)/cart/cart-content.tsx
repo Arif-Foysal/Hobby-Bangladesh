@@ -214,8 +214,8 @@ export function CartPageContent({
   if (items.length === 0) {
     return (
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 px-4 py-24 text-center">
-        <IconShoppingBag className="size-12 text-muted-foreground" />
-        <h2 className="font-display text-2xl font-bold">Your cart is empty</h2>
+        <IconShoppingBag className="size-16 text-muted-foreground" />
+        <h2 className="font-display text-3xl font-bold">Your cart is empty</h2>
         <p className="text-muted-foreground">
           Browse our products and add something to your cart.
         </p>
@@ -240,7 +240,7 @@ export function CartPageContent({
                 className={isPending ? "opacity-70 transition-opacity" : ""}
               >
                 <CardContent className="flex gap-4 p-4">
-                  <div className="relative size-20 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <div className="relative size-24 shrink-0 overflow-hidden rounded-md bg-muted">
                     {item.image?.url ? (
                       <Image
                         src={item.image.url}
@@ -267,11 +267,11 @@ export function CartPageContent({
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="icon"
-                          className="size-9"
+                          className="size-10"
                           onClick={() =>
                             isGuest
                               ? handleGuestUpdate(
@@ -282,15 +282,15 @@ export function CartPageContent({
                           }
                           disabled={item.quantity <= 1 || isPending}
                         >
-                          <IconMinus className="size-3" />
+                          <IconMinus className="size-4" />
                         </Button>
-                        <span className="w-8 text-center text-sm font-medium">
+                        <span className="w-10 text-center text-base font-semibold">
                           {item.quantity}
                         </span>
                         <Button
                           variant="outline"
                           size="icon"
-                          className="size-9"
+                          className="size-10"
                           onClick={() =>
                             isGuest
                               ? handleGuestUpdate(
@@ -303,12 +303,12 @@ export function CartPageContent({
                             item.quantity >= item.stockQty || isPending
                           }
                         >
-                          <IconPlus className="size-3" />
+                          <IconPlus className="size-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="ml-2 size-9 text-muted-foreground"
+                          className="ml-2 size-10 text-muted-foreground"
                           onClick={() =>
                             isGuest
                               ? handleGuestRemove(item.productId)
@@ -316,7 +316,7 @@ export function CartPageContent({
                           }
                           disabled={isPending}
                         >
-                          <IconTrash className="size-3" />
+                          <IconTrash className="size-4" />
                         </Button>
                       </div>
                       <span className="font-semibold text-primary">
@@ -335,7 +335,7 @@ export function CartPageContent({
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>৳ {subtotal.toLocaleString()}</span>

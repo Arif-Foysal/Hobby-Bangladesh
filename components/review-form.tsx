@@ -67,7 +67,7 @@ export function ReviewForm({ productId }: { productId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 rounded-lg border p-4">
+    <form onSubmit={handleSubmit} className="mt-4 rounded-lg border bg-card p-5">
       <h3 className="text-sm font-medium">Write a Review</h3>
       <div className="mt-3 flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -91,7 +91,7 @@ export function ReviewForm({ productId }: { productId: string }) {
         <Input name="title" placeholder="Review title (optional)" />
         <Textarea name="content" placeholder="Write your review..." rows={3} />
       </div>
-      <Button type="submit" size="sm" className="mt-3" disabled={loading}>
+      <Button type="submit" className="mt-3" disabled={loading}>
         {loading ? "Submitting..." : "Submit Review"}
       </Button>
     </form>

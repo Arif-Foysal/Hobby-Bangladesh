@@ -29,7 +29,7 @@ export async function RelatedProducts({
   return (
     <section className="mt-12">
       <h2 className="font-display text-2xl font-bold tracking-tight">Related Products</h2>
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => {
           const images: ProductImage[] = Array.isArray(product.images)
             ? product.images
@@ -44,7 +44,7 @@ export async function RelatedProducts({
               href={`/products/${product.slug}`}
               className="group"
             >
-              <Card className="overflow-hidden border-0 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+              <Card className="overflow-hidden border border-border/50 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
                 <div className="relative aspect-square overflow-hidden bg-muted">
                   <Image
                     src={image?.url || ""}
@@ -71,7 +71,7 @@ export async function RelatedProducts({
                     </Badge>
                   )}
                 </div>
-                <CardContent className="p-3">
+                <CardContent className="p-4">
                   <h3 className="truncate text-sm font-medium">
                     {product.name}
                   </h3>

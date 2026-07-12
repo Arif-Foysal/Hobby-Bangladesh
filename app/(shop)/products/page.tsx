@@ -67,7 +67,7 @@ export default async function ProductsPage({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-10 lg:px-6 lg:py-12">
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold tracking-tight">Products</h1>
         <p className="text-muted-foreground">
@@ -96,7 +96,7 @@ export default async function ProductsPage({
               No exact matches for &ldquo;{search}&rdquo;. Showing similar results.
             </span>
           </div>
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {fuzzyResults.map((product) => (
               <ProductCard
                 key={product.id}
@@ -184,7 +184,10 @@ export default async function ProductsPage({
         </div>
       ) : (
         <>
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <p className="mt-8 text-sm text-muted-foreground">
+            Showing {products.length} of {total} products
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
               <ProductCard
                 key={product.id}
@@ -211,7 +214,7 @@ export default async function ProductsPage({
                   </Link>
                 </Button>
               )}
-              <span className="flex items-center px-4 text-sm text-muted-foreground">
+              <span className="flex items-center px-4 text-base font-medium text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
               {page < totalPages && (

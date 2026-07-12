@@ -50,14 +50,14 @@ export default async function ProductDetailPage({
   } | null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-10 lg:px-6 lg:py-12">
       <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
         <Link href="/products" className="hover:text-foreground">
           Products
         </Link>
         {category && (
           <>
-            <IconChevronRight className="size-3" />
+            <IconChevronRight className="size-4" />
             <Link
               href={`/products?category=${category.slug}`}
               className="hover:text-foreground"
@@ -75,7 +75,7 @@ export default async function ProductDetailPage({
 
         <div className="flex flex-col gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">
+            <h1 className="font-display text-3xl font-bold tracking-tight lg:text-4xl">
               {product.name}
             </h1>
             {product.short_desc && (
@@ -86,7 +86,7 @@ export default async function ProductDetailPage({
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-primary">
+            <span className="text-4xl font-bold text-primary lg:text-5xl">
               ৳ {product.price.toLocaleString()}
             </span>
             {product.compare_at && product.compare_at > product.price && (
@@ -112,7 +112,7 @@ export default async function ProductDetailPage({
 
           {/* Shipping Info */}
           <Card className="bg-muted/30">
-            <CardContent className="flex flex-col gap-2 p-3 text-sm">
+            <CardContent className="flex flex-col gap-3 p-4 text-sm">
               <div className="flex items-center gap-2">
                 <IconTruckDelivery className="size-4 text-primary" />
                 <span>
@@ -138,7 +138,7 @@ export default async function ProductDetailPage({
 
           {product.description && (
             <div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
+              <p className="text-base text-muted-foreground leading-relaxed">{product.description}</p>
             </div>
           )}
 

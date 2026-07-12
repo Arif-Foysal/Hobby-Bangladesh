@@ -25,7 +25,7 @@ export function ReviewsList({
   return (
     <div className="mt-4 flex flex-col gap-4">
       {reviews.map((review) => (
-        <div key={review.id} className="rounded-lg border p-4">
+        <div key={review.id} className="rounded-lg border bg-card p-5">
           <div className="flex items-center gap-2">
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((star) => (

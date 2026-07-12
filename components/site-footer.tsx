@@ -8,7 +8,7 @@ export async function SiteFooter() {
   const storeName = storeInfo?.name ?? "Hobby Bangladesh";
 
   return (
-    <footer className="border-t bg-muted/30">
+    <footer className="border-t bg-muted/50">
       <div className="mx-auto max-w-7xl px-4 py-12 lg:px-6">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -20,7 +20,7 @@ export async function SiteFooter() {
 
           <div>
             <h4 className="text-sm font-semibold">Shop</h4>
-            <nav className="mt-2 flex flex-col gap-1.5">
+            <nav className="mt-2 flex flex-col gap-2">
               <Link href="/products" className="text-sm text-muted-foreground hover:text-foreground">
                 All Products
               </Link>
@@ -29,7 +29,7 @@ export async function SiteFooter() {
 
           <div>
             <h4 className="text-sm font-semibold">Account</h4>
-            <nav className="mt-2 flex flex-col gap-1.5">
+            <nav className="mt-2 flex flex-col gap-2">
               <Link href="/account/orders" className="text-sm text-muted-foreground hover:text-foreground">
                 My Orders
               </Link>
@@ -44,7 +44,7 @@ export async function SiteFooter() {
 
           <div>
             <h4 className="text-sm font-semibold">Contact</h4>
-            <div className="mt-2 flex flex-col gap-1.5 text-sm text-muted-foreground">
+            <div className="mt-2 flex flex-col gap-2 text-sm text-muted-foreground">
               {storeInfo?.email && <p>{storeInfo.email}</p>}
               {storeInfo?.phone && <p>{storeInfo.phone}</p>}
               {storeInfo?.address && <p>{storeInfo.address}</p>}

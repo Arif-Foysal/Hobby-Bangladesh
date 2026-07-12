@@ -77,13 +77,13 @@ export default async function HomePage() {
           <HeroCarousel slides={heroSlides} />
         </section>
       ) : (
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-muted/30">
-          <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 py-16 lg:flex-row lg:px-6 lg:py-24">
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-background to-muted/40">
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 py-20 lg:flex-row lg:px-6 lg:py-32">
             <div className="max-w-2xl text-center lg:text-left">
-              <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+              <h1 className="font-display text-5xl font-bold tracking-tight sm:text-6xl">
                 Welcome to {storeName}
               </h1>
-              <p className="mt-4 text-lg text-muted-foreground">
+              <p className="mt-4 text-xl text-muted-foreground">
                 Discover a curated collection of hobby products. From RC cars to
                 model kits, find everything you need for your next project.
               </p>
@@ -113,14 +113,17 @@ export default async function HomePage() {
       {categories.length > 0 && (
         <FadeIn delay={100}>
         <section className="mx-auto w-full max-w-7xl px-4 py-12 lg:px-6 lg:py-16">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl font-bold tracking-tight">
+              Browse Categories
+            </h2>
             <Button variant="ghost" asChild>
               <Link href="/products">
                 View All <IconArrowRight />
               </Link>
             </Button>
           </div>
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {categories.map((cat) => (
               <Link
                 key={cat.id}
@@ -136,8 +139,8 @@ export default async function HomePage() {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-lg font-semibold text-white drop-shadow-md">
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-xl font-semibold text-white drop-shadow-md">
                         {cat.name}
                       </h3>
                       {cat.description && (
@@ -163,10 +166,10 @@ export default async function HomePage() {
         <section className="mx-auto w-full max-w-7xl px-4 py-12 lg:px-6 lg:py-16">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-display text-2xl font-bold tracking-tight">
+              <h2 className="font-display text-3xl font-bold tracking-tight">
                 Popular Products
               </h2>
-              <p className="text-muted-foreground">Our best-selling items.</p>
+              <p className="text-base text-muted-foreground">Our best-selling items.</p>
             </div>
             <Button variant="ghost" asChild>
               <Link href="/products">
@@ -174,7 +177,7 @@ export default async function HomePage() {
               </Link>
             </Button>
           </div>
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {featuredProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -196,8 +199,8 @@ export default async function HomePage() {
       {/* Empty state */}
       {featuredProducts.length === 0 && categories.length === 0 && (
         <section className="mx-auto w-full max-w-7xl px-4 py-24 text-center lg:px-6">
-          <IconCategory className="mx-auto size-12 text-muted-foreground" />
-          <h2 className="mt-4 font-display text-2xl font-bold">
+          <IconCategory className="mx-auto size-16 text-muted-foreground" />
+          <h2 className="mt-4 font-display text-3xl font-bold">
             Welcome to {storeName}
           </h2>
           <p className="mt-2 text-muted-foreground">

@@ -165,6 +165,25 @@ export async function deleteCategory(id: string) {
   return { success: true };
 }
 
+export async function updateCategorySortOrders(ids: string[]) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const updates = ids.map((id, index) =>
+    supabase
+      .from("categories")
+      .update({ sort_order: index })
+      .eq("id", id)
+  );
+
+  await Promise.all(updates);
+
+  revalidatePath("/");
+  revalidatePath("/admin/categories");
+  revalidatePath("/products");
+  return { success: true };
+}
+
 export async function toggleCategoryActive(id: string, isActive: boolean) {
   await requireAdmin();
   const supabase = await createClient();

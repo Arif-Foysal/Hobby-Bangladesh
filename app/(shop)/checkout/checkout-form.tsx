@@ -163,7 +163,7 @@ export function CheckoutForm({
           {/* Contact Info */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Contact Information</CardTitle>
+              <CardTitle className="text-base font-semibold">Contact Information</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
@@ -195,7 +195,7 @@ export function CheckoutForm({
           {/* Shipping Address */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Shipping Address</CardTitle>
+              <CardTitle className="text-base font-semibold">Shipping Address</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
@@ -243,10 +243,10 @@ export function CheckoutForm({
           {/* Payment Method */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Payment Method</CardTitle>
+              <CardTitle className="text-base font-semibold">Payment Method</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-3 rounded-lg border border-primary bg-primary/5 p-3">
+              <div className="flex items-center gap-3 rounded-lg border border-primary bg-primary/5 p-4">
                 <IconBuildingBank className="size-5 text-primary" />
                 <div>
                   <p className="text-sm font-medium">Cash on Delivery</p>
@@ -261,7 +261,7 @@ export function CheckoutForm({
           {/* Notes */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Order Notes (Optional)</CardTitle>
+              <CardTitle className="text-base font-semibold">Order Notes (Optional)</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
@@ -277,7 +277,7 @@ export function CheckoutForm({
         <div>
           <Card className="sticky top-24">
             <CardHeader>
-              <CardTitle className="text-sm">Order Summary</CardTitle>
+              <CardTitle className="text-base font-semibold">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {cartItems.map((item) => (
@@ -285,7 +285,7 @@ export function CheckoutForm({
                   key={item.productId}
                   className="flex items-center gap-3"
                 >
-                  <div className="relative size-12 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-md bg-muted">
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -393,7 +393,7 @@ export function CheckoutForm({
                 </div>
               )}
               <Separator />
-              <div className="flex justify-between text-lg font-semibold">
+              <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
                 <span className="text-primary">৳ {total.toLocaleString()}</span>
               </div>
@@ -405,7 +405,7 @@ export function CheckoutForm({
               </div>
             )}
 
-            <div className="p-4 pt-0">
+            <div className="p-4">
               <Button
                 type="submit"
                 size="lg"
