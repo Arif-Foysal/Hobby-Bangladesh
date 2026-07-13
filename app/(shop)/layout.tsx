@@ -19,9 +19,7 @@ export default async function ShopLayout({
       <WhatsAppFloat />
       <AnalyticsScripts
         enabled={analytics?.enabled ?? false}
-        googleAnalyticsId={analytics?.google_analytics_id}
-        metaPixelId={analytics?.meta_pixel_id}
-        googleAdsId={analytics?.google_ads_id}
+        gtmContainerId={analytics?.gtm_container_id}
       />
     </div>
   );

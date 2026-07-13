@@ -68,14 +68,10 @@ export default async function SettingsPage() {
             initialData={
               (analytics as {
                 enabled?: boolean;
-                google_analytics_id?: string;
-                meta_pixel_id?: string;
-                google_ads_id?: string;
+                gtm_container_id?: string;
               }) ?? {
                 enabled: false,
-                google_analytics_id: "",
-                meta_pixel_id: "",
-                google_ads_id: "",
+                gtm_container_id: "",
               }
             }
           />

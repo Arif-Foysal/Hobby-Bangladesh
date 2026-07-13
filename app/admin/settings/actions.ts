@@ -159,9 +159,7 @@ export async function saveAnalytics(formData: FormData) {
 
   const value = {
     enabled: formData.get("enabled") === "on",
-    google_analytics_id: (formData.get("google_analytics_id") as string) || undefined,
-    meta_pixel_id: (formData.get("meta_pixel_id") as string) || undefined,
-    google_ads_id: (formData.get("google_ads_id") as string) || undefined,
+    gtm_container_id: (formData.get("gtm_container_id") as string) || undefined,
   };
 
   const { data: existing } = await supabase
@@ -188,9 +186,7 @@ export async function saveAnalytics(formData: FormData) {
     resourceType: "settings",
     details: {
       key: "analytics",
-      ga: !!value.google_analytics_id,
-      pixel: !!value.meta_pixel_id,
-      ads: !!value.google_ads_id,
+      gtm: !!value.gtm_container_id,
     },
   });
 
