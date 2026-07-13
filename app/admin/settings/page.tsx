@@ -4,14 +4,16 @@ import { getStoreSetting } from "@/lib/supabase/store";
 import { HeroSlidesManager } from "./hero-slides-manager";
 import { StoreInfoForm } from "./store-info-form";
 import { CurrencyForm } from "./currency-form";
+import { AnalyticsForm } from "./analytics-form";
 
 export const metadata = { title: "Settings | Admin | Hobby Bangladesh" };
 
 export default async function SettingsPage() {
-  const [heroSlides, storeInfo, currency] = await Promise.all([
+  const [heroSlides, storeInfo, currency, analytics] = await Promise.all([
     getHeroSlides(),
     getStoreSetting("store"),
     getStoreSetting("currency"),
+    getStoreSetting("analytics"),
   ]);
 
   return (
@@ -28,6 +30,7 @@ export default async function SettingsPage() {
           <TabsTrigger value="hero">Hero Slides</TabsTrigger>
           <TabsTrigger value="store">Store Info</TabsTrigger>
           <TabsTrigger value="currency">Currency</TabsTrigger>
+          <TabsTrigger value="tracking">Tracking</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hero" className="mt-4">
@@ -55,6 +58,24 @@ export default async function SettingsPage() {
                 code: "BDT",
                 symbol: "৳",
                 position: "before",
+              }
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="tracking" className="mt-4">
+          <AnalyticsForm
+            initialData={
+              (analytics as {
+                enabled?: boolean;
+                google_analytics_id?: string;
+                meta_pixel_id?: string;
+                google_ads_id?: string;
+              }) ?? {
+                enabled: false,
+                google_analytics_id: "",
+                meta_pixel_id: "",
+                google_ads_id: "",
               }
             }
           />

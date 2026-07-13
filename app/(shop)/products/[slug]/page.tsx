@@ -5,6 +5,7 @@ import { ProductGallery } from "@/components/product-gallery";
 import { ProductActions } from "@/components/product-actions";
 import { RelatedProducts } from "@/components/related-products";
 import { ProductReviews } from "@/components/product-reviews";
+import { ViewItemTracker } from "@/components/view-item-tracker";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { IconChevronRight } from "@tabler/icons-react";
@@ -39,6 +40,12 @@ export default async function ProductDetailPage({
 
   return (
     <div className="flex flex-col">
+      <ViewItemTracker
+        id={product.id}
+        name={product.name}
+        price={product.price}
+        category={category?.name}
+      />
       <div className="mx-auto w-full max-w-7xl px-4 pt-4 lg:px-6">
         <nav className="mb-4 flex items-center gap-1 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">Home</Link>
@@ -125,6 +132,9 @@ export default async function ProductDetailPage({
             <ProductActions
               productId={product.id}
               stockQty={product.stock_qty}
+              productName={product.name}
+              productPrice={product.price}
+              productCategory={category?.name}
             />
 
             {product.sku && (

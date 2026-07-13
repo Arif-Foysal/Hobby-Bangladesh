@@ -185,10 +185,23 @@ export interface HeroSlidesConfig {
   slides: HeroSlide[];
 }
 
+export interface StoreAnalytics {
+  enabled?: boolean;
+  google_analytics_id?: string;
+  meta_pixel_id?: string;
+  google_ads_id?: string;
+}
+
 export interface StoreSetting {
   id: string;
   key: string;
-  value: StoreCurrency | StoreTax | StoreShipping | StoreInfo | HeroSlidesConfig;
+  value:
+    | StoreCurrency
+    | StoreTax
+    | StoreShipping
+    | StoreInfo
+    | HeroSlidesConfig
+    | StoreAnalytics;
 }
 
 export interface Coupon {

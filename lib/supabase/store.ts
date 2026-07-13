@@ -4,6 +4,7 @@ import type {
   StoreTax,
   StoreShipping,
   StoreInfo,
+  StoreAnalytics,
   StoreSetting,
 } from "@/lib/database/types";
 
@@ -20,10 +21,11 @@ function emptyCache() {
 export async function getStoreSetting<K extends string>(
   key: K
 ): Promise<K extends "currency" ? StoreCurrency
-       : K extends "tax" ? StoreTax
-       : K extends "shipping" ? StoreShipping
-       : K extends "store" ? StoreInfo
-       : Record<string, unknown> | null> {
+     : K extends "tax" ? StoreTax
+     : K extends "shipping" ? StoreShipping
+     : K extends "store" ? StoreInfo
+     : K extends "analytics" ? StoreAnalytics
+     : Record<string, unknown> | null> {
   if (settingCache.has(key)) {
     return settingCache.get(key) as never;
   }

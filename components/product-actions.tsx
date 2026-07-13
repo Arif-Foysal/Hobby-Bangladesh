@@ -8,9 +8,15 @@ import { QuantitySelector } from "@/components/quantity-selector";
 export function ProductActions({
   productId,
   stockQty,
+  productName,
+  productPrice,
+  productCategory,
 }: {
   productId: string;
   stockQty: number;
+  productName?: string;
+  productPrice?: number;
+  productCategory?: string | null;
 }) {
   const [quantity, setQuantity] = useState(1);
 
@@ -26,11 +32,17 @@ export function ProductActions({
           productId={productId}
           stockQty={stockQty}
           quantity={quantity}
+          productName={productName}
+          productPrice={productPrice}
+          productCategory={productCategory}
         />
         <BuyNowButton
           productId={productId}
           stockQty={stockQty}
           quantity={quantity}
+          productName={productName}
+          productPrice={productPrice}
+          productCategory={productCategory}
         />
       </div>
     </div>

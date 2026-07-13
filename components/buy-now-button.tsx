@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { addToGuestCart } from "@/lib/cart";
 import { addToCart } from "@/app/cart/actions";
 import { createClient } from "@/lib/supabase/client";
+import { trackAddToCart } from "@/lib/analytics-events";
 import { IconShoppingBag } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -15,12 +16,18 @@ export function BuyNowButton({
   quantity = 1,
   size = "lg",
   className,
+  productName,
+  productPrice,
+  productCategory,
 }: {
   productId: string;
   stockQty: number;
   quantity?: number;
   size?: "sm" | "lg" | "default";
   className?: string;
+  productName?: string;
+  productPrice?: number;
+  productCategory?: string | null;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -44,6 +51,13 @@ export function BuyNowButton({
     }
 
     router.push("/checkout");
+    trackAddToCart({
+      id: productId,
+      name: productName ?? "",
+      price: productPrice,
+      quantity,
+      category: productCategory,
+    });
   };
 
   const disabled = stockQty <= 0 || loading;

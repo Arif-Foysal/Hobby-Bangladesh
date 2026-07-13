@@ -127,6 +127,9 @@ export function ProductCard({
             stockQty={stockQty}
             size="sm"
             className="w-full"
+            productName={name}
+            productPrice={price}
+            productCategory={categoryName}
           />
         </div>
       </CardContent>

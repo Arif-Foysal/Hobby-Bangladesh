@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { createOrder, validateCoupon } from "./actions";
 import { clearGuestCart } from "@/lib/cart";
+import { trackBeginCheckout, trackPurchase } from "@/lib/analytics-events";
 import { toast } from "sonner";
 import {
   IconBuildingBank,
@@ -71,6 +72,7 @@ export function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentMethod] = useState<string>("cod");
+  const hasFiredBeginCheckout = useRef(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -88,6 +90,21 @@ export function CheckoutForm({
       : shipping?.inside_dhaka ?? 60;
   const discount = appliedCoupon?.discount ?? 0;
   const total = Math.max(0, subtotal + shippingCost - discount);
+
+  useEffect(() => {
+    if (hasFiredBeginCheckout.current) return;
+    hasFiredBeginCheckout.current = true;
+    if (cartItems.length === 0) return;
+    trackBeginCheckout(
+      cartItems.map((item) => ({
+        id: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      total
+    );
+  }, [cartItems, total]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -153,6 +170,18 @@ export function CheckoutForm({
 
     clearGuestCart();
     toast.success("Order placed successfully!");
+
+    trackPurchase({
+      id: result.orderNumber,
+      value: total,
+      items: cartItems.map((item) => ({
+        id: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+    });
+
     router.push(`/checkout/success?order=${result.orderNumber}`);
   };
 

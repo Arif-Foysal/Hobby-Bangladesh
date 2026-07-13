@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { addToCart } from "@/app/cart/actions";
 import { addToGuestCart } from "@/lib/cart";
 import { createClient } from "@/lib/supabase/client";
+import { trackAddToCart } from "@/lib/analytics-events";
 import { IconShoppingCart, IconCheck } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -12,10 +13,16 @@ export function AddToCartButton({
   productId,
   stockQty,
   quantity = 1,
+  productName,
+  productPrice,
+  productCategory,
 }: {
   productId: string;
   stockQty: number;
   quantity?: number;
+  productName?: string;
+  productPrice?: number;
+  productCategory?: string | null;
 }) {
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -47,6 +54,14 @@ export function AddToCartButton({
     toast.success("Added to cart");
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+
+    trackAddToCart({
+      id: productId,
+      name: productName ?? "",
+      price: productPrice,
+      quantity,
+      category: productCategory,
+    });
   };
 
   const disabled = stockQty <= 0 || loading;

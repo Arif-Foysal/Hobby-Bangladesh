@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/supabase/admin";
 import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import type { HeroSlide } from "@/lib/database/types";
+import { emptyCache } from "@/lib/supabase/store";
 
 export async function getHeroSlides(): Promise<HeroSlide[]> {
   const supabase = await createClient();
@@ -117,6 +118,52 @@ export async function saveCurrency(formData: FormData) {
     action: "update",
     resourceType: "settings",
     details: { key: "currency", code: value.code, symbol: value.symbol },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+  return { success: true };
+}
+
+export async function saveAnalytics(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const value = {
+    enabled: formData.get("enabled") === "on",
+    google_analytics_id: (formData.get("google_analytics_id") as string) || undefined,
+    meta_pixel_id: (formData.get("meta_pixel_id") as string) || undefined,
+    google_ads_id: (formData.get("google_ads_id") as string) || undefined,
+  };
+
+  const { data: existing } = await supabase
+    .from("store_settings")
+    .select("id")
+    .eq("key", "analytics")
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("store_settings")
+      .update({ value })
+      .eq("key", "analytics");
+  } else {
+    await supabase
+      .from("store_settings")
+      .insert({ key: "analytics", value });
+  }
+
+  emptyCache();
+
+  await logAdminAction({
+    action: "update",
+    resourceType: "settings",
+    details: {
+      key: "analytics",
+      ga: !!value.google_analytics_id,
+      pixel: !!value.meta_pixel_id,
+      ads: !!value.google_ads_id,
+    },
   });
 
   revalidatePath("/");
