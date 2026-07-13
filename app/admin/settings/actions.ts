@@ -83,10 +83,24 @@ export async function saveStoreInfo(formData: FormData) {
     whatsapp_number: (formData.get("whatsapp_number") as string) || undefined,
   };
 
-  await supabase
+  const { data: existing } = await supabase
     .from("store_settings")
-    .update({ value })
-    .eq("key", "store");
+    .select("id")
+    .eq("key", "store")
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("store_settings")
+      .update({ value })
+      .eq("key", "store");
+  } else {
+    await supabase
+      .from("store_settings")
+      .insert({ key: "store", value });
+  }
+
+  emptyCache();
 
   await logAdminAction({
     action: "update",
@@ -109,10 +123,24 @@ export async function saveCurrency(formData: FormData) {
     position: formData.get("position") as string,
   };
 
-  await supabase
+  const { data: existing } = await supabase
     .from("store_settings")
-    .update({ value })
-    .eq("key", "currency");
+    .select("id")
+    .eq("key", "currency")
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("store_settings")
+      .update({ value })
+      .eq("key", "currency");
+  } else {
+    await supabase
+      .from("store_settings")
+      .insert({ key: "currency", value });
+  }
+
+  emptyCache();
 
   await logAdminAction({
     action: "update",
