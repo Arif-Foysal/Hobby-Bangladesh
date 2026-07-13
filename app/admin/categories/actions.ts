@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/admin";
+import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export async function getCategories() {
@@ -114,6 +115,12 @@ export async function createCategory(formData: FormData) {
     return { error: error.message };
   }
 
+  await logAdminAction({
+    action: "create",
+    resourceType: "category",
+    details: { name, slug },
+  });
+
   revalidatePath("/admin/categories");
   return { success: true };
 }
@@ -150,6 +157,13 @@ export async function updateCategory(id: string, formData: FormData) {
     return { error: error.message };
   }
 
+  await logAdminAction({
+    action: "update",
+    resourceType: "category",
+    resourceId: id,
+    details: { name, slug },
+  });
+
   revalidatePath("/admin/categories");
   return { success: true };
 }
@@ -160,6 +174,12 @@ export async function deleteCategory(id: string) {
   const { error } = await supabase.from("categories").delete().eq("id", id);
 
   if (error) return { error: error.message };
+
+  await logAdminAction({
+    action: "delete",
+    resourceType: "category",
+    resourceId: id,
+  });
 
   revalidatePath("/admin/categories");
   return { success: true };
@@ -178,6 +198,12 @@ export async function updateCategorySortOrders(ids: string[]) {
 
   await Promise.all(updates);
 
+  await logAdminAction({
+    action: "reorder",
+    resourceType: "category",
+    details: { count: ids.length },
+  });
+
   revalidatePath("/");
   revalidatePath("/admin/categories");
   revalidatePath("/products");
@@ -193,6 +219,13 @@ export async function toggleCategoryActive(id: string, isActive: boolean) {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  await logAdminAction({
+    action: "toggle",
+    resourceType: "category",
+    resourceId: id,
+    details: { is_active: !isActive },
+  });
 
   revalidatePath("/admin/categories");
   return { success: true };

@@ -18,40 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createCategory, updateCategory, uploadCategoryImage } from "./actions";
+import { compressImage } from "@/lib/image-compress";
 import { IconPhoto, IconX } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { Category } from "@/lib/database/types";
-
-const MAX_WIDTH = 800;
-const JPEG_QUALITY = 0.85;
-
-async function compressImage(file: File): Promise<File> {
-  const bitmap = await createImageBitmap(file);
-  const width = Math.min(bitmap.width, MAX_WIDTH);
-  const height = Math.round((bitmap.height / bitmap.width) * width);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-
-  return new Promise((resolve) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return resolve(file);
-        const compressed = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), {
-          type: "image/jpeg",
-        });
-        resolve(compressed);
-      },
-      "image/jpeg",
-      JPEG_QUALITY
-    );
-  });
-}
 
 function slugify(text: string) {
   return text
@@ -91,7 +61,7 @@ export function CategoryForm({
     setUploading(true);
     setError(null);
     toast.info("Optimizing image...");
-    const compressed = await compressImage(file);
+    const compressed = await compressImage(file, { maxDimension: 800 });
     const result = await uploadCategoryImage(compressed);
     setUploading(false);
 

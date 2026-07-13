@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { logAuthEvent } from "@/lib/audit";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { IconLogout } from "@tabler/icons-react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ export function SignOutButton() {
 
   const handleSignOut = async () => {
     const supabase = createClient();
+    await logAuthEvent("logout");
     await supabase.auth.signOut();
     toast.success("Signed out");
     router.push("/auth/login");

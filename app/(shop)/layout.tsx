@@ -1,5 +1,6 @@
 import { SiteHeader as SiteHeaderPublic } from "@/components/site-header-public";
 import { SiteFooter } from "@/components/site-footer";
+import { WhatsAppFloat } from "@/components/whatsapp-float";
 
 export default function ShopLayout({
   children,
@@ -11,6 +12,7 @@ export default function ShopLayout({
       <SiteHeaderPublic />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      <WhatsAppFloat />
     </div>
   );
 }

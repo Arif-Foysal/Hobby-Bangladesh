@@ -194,7 +194,7 @@ export function ProductLandingPage({ product }: ProductLandingPageProps) {
               </h2>
             </div>
             <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {images.map((img, i) => (
+              {images.filter((img) => img?.url).map((img, i) => (
                 <div
                   key={i}
                   className={`group relative overflow-hidden rounded-xl bg-muted ${

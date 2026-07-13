@@ -60,6 +60,14 @@ export async function updateUserRole(userId: string, role: string) {
     .eq("id", userId);
 
   if (error) return { error: error.message };
+
+  await logAdminAction({
+    action: "update_role",
+    resourceType: "user",
+    resourceId: userId,
+    details: { role },
+  });
+
   revalidatePath(`/admin/customers/${userId}`);
   revalidatePath("/admin/customers");
   return { success: true };

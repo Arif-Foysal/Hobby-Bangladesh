@@ -46,14 +46,15 @@ export async function RelatedProducts({
             >
               <Card className="overflow-hidden border border-border/50 bg-muted/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
                 <div className="relative aspect-square overflow-hidden bg-muted">
-                  <Image
-                    src={image?.url || ""}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {!image?.url && (
+                  {image?.url ? (
+                    <Image
+                      src={image.url}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
                     <div className="flex size-full items-center justify-center text-muted-foreground">
                       <IconPhotoOff className="size-8" />
                     </div>

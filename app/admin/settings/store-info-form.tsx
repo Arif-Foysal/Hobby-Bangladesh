@@ -12,7 +12,13 @@ import { toast } from "sonner";
 export function StoreInfoForm({
   initialData,
 }: {
-  initialData: { name: string; email: string; phone: string; address: string };
+  initialData: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    whatsapp_number?: string;
+  };
 }) {
   const [saving, setSaving] = useState(false);
 
@@ -61,6 +67,15 @@ export function StoreInfoForm({
                 name="phone"
                 defaultValue={initialData.phone}
                 placeholder="+880..."
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="whatsapp_number">WhatsApp Number</Label>
+              <Input
+                id="whatsapp_number"
+                name="whatsapp_number"
+                defaultValue={initialData.whatsapp_number ?? ""}
+                placeholder="8801XXXXXXXX"
               />
             </div>
             <div className="flex flex-col gap-2">

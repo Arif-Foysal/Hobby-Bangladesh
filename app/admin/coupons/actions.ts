@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/admin";
+import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export async function getAdminCoupons({
@@ -114,6 +115,12 @@ export async function createCoupon(formData: FormData) {
     return { error: error.message };
   }
 
+  await logAdminAction({
+    action: "create",
+    resourceType: "coupon",
+    details: { code, discount_type: discountType, discount_value: discountValue },
+  });
+
   revalidatePath("/admin/coupons");
   return { success: true };
 }
@@ -160,6 +167,13 @@ export async function updateCoupon(id: string, formData: FormData) {
     return { error: error.message };
   }
 
+  await logAdminAction({
+    action: "update",
+    resourceType: "coupon",
+    resourceId: id,
+    details: { code, discount_type: discountType, discount_value: discountValue },
+  });
+
   revalidatePath("/admin/coupons");
   return { success: true };
 }
@@ -170,6 +184,11 @@ export async function deleteCoupon(id: string) {
   const { error } = await supabase.from("coupons").delete().eq("id", id);
 
   if (error) return { error: error.message };
+  await logAdminAction({
+    action: "delete",
+    resourceType: "coupon",
+    resourceId: id,
+  });
   revalidatePath("/admin/coupons");
   return { success: true };
 }
@@ -183,6 +202,14 @@ export async function toggleCouponActive(id: string, isActive: boolean) {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  await logAdminAction({
+    action: "toggle",
+    resourceType: "coupon",
+    resourceId: id,
+    details: { is_active: !isActive },
+  });
+
   revalidatePath("/admin/coupons");
   return { success: true };
 }

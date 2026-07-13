@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/admin";
+import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import type { HeroSlide } from "@/lib/database/types";
 
@@ -38,6 +39,12 @@ export async function saveHeroSlides(slides: HeroSlide[]) {
       .insert({ key: "hero_slides", value: { slides } });
   }
 
+  await logAdminAction({
+    action: "update",
+    resourceType: "settings",
+    details: { key: "hero_slides", slide_count: slides.length },
+  });
+
   revalidatePath("/");
   revalidatePath("/admin/settings");
   return { success: true };
@@ -72,12 +79,19 @@ export async function saveStoreInfo(formData: FormData) {
     email: formData.get("email") as string,
     phone: formData.get("phone") as string,
     address: formData.get("address") as string,
+    whatsapp_number: (formData.get("whatsapp_number") as string) || undefined,
   };
 
   await supabase
     .from("store_settings")
     .update({ value })
     .eq("key", "store");
+
+  await logAdminAction({
+    action: "update",
+    resourceType: "settings",
+    details: { key: "store", name: value.name },
+  });
 
   revalidatePath("/");
   revalidatePath("/admin/settings");
@@ -98,6 +112,12 @@ export async function saveCurrency(formData: FormData) {
     .from("store_settings")
     .update({ value })
     .eq("key", "currency");
+
+  await logAdminAction({
+    action: "update",
+    resourceType: "settings",
+    details: { key: "currency", code: value.code, symbol: value.symbol },
+  });
 
   revalidatePath("/");
   revalidatePath("/admin/settings");

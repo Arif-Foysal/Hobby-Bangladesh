@@ -221,7 +221,7 @@ export async function getProductsForListing({
 
   query = query.range(from, to);
 
-  let { data, error, count } = await query;
+  const { data, error, count } = await query;
   if (error) throw error;
 
   // If ilike returned 0 results with a search term, try fuzzy matching

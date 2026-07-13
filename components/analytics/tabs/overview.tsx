@@ -4,6 +4,7 @@ import { AnalyticsEmpty } from "@/components/analytics/analytics-empty";
 import { SalesTrendChart, RevenueDonutChart } from "@/components/analytics/charts";
 import { DataTable } from "@/components/analytics/data-table";
 import { LowStockAlerts } from "@/components/low-stock-alerts";
+import { RecentActivity } from "@/components/recent-activity";
 import {
   getSalesSummary,
   getDailySales,
@@ -81,24 +82,27 @@ export async function OverviewTab({ dateRange }: { dateRange: DateRange }) {
         </AnalyticsChartCard>
       </div>
 
-      <AnalyticsChartCard
-        title="Top 5 Products"
-        description="Best performers by revenue"
-      >
-        {topProducts.length > 0 ? (
-          <DataTable
-            headers={["Product", "Category", "Units Sold", "Revenue"]}
-            rows={topProducts.map((p) => [
-              p.product_name,
-              p.category_name,
-              p.units_sold,
-              formatCurrency(p.revenue),
-            ])}
-          />
-        ) : (
-          <AnalyticsEmpty />
-        )}
-      </AnalyticsChartCard>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <AnalyticsChartCard
+          title="Top 5 Products"
+          description="Best performers by revenue"
+        >
+          {topProducts.length > 0 ? (
+            <DataTable
+              headers={["Product", "Category", "Units Sold", "Revenue"]}
+              rows={topProducts.map((p) => [
+                p.product_name,
+                p.category_name,
+                p.units_sold,
+                formatCurrency(p.revenue),
+              ])}
+            />
+          ) : (
+            <AnalyticsEmpty />
+          )}
+        </AnalyticsChartCard>
+        <RecentActivity />
+      </div>
     </div>
   );
 }

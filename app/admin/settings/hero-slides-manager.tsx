@@ -26,41 +26,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { saveHeroSlides, uploadHeroImage } from "./actions";
+import { compressImage } from "@/lib/image-compress";
 import { IconX, IconGripVertical, IconPhoto, IconRefresh } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { HeroSlide } from "@/lib/database/types";
-
-const MAX_WIDTH = 1920;
-const JPEG_QUALITY = 0.85;
-
-async function compressImage(file: File): Promise<File> {
-  const bitmap = await createImageBitmap(file);
-  const width = Math.min(bitmap.width, MAX_WIDTH);
-  const height = Math.round((bitmap.height / bitmap.width) * width);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-
-  return new Promise((resolve) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return resolve(file);
-        const ext = file.type === "image/png" ? "png" : "jpg";
-        const compressed = new File([blob], file.name.replace(/\.[^.]+$/, `.${ext}`), {
-          type: ext === "png" ? "image/png" : "image/jpeg",
-        });
-        resolve(compressed);
-      },
-      "image/jpeg",
-      JPEG_QUALITY
-    );
-  });
-}
 
 function SortableSlide({
   slide,
@@ -212,7 +181,7 @@ export function HeroSlidesManager({
 
     for (const file of Array.from(files)) {
       toast.info(`Optimizing ${file.name}...`);
-      const compressed = await compressImage(file);
+      const compressed = await compressImage(file, { maxDimension: 1920 });
 
       const result = await uploadHeroImage(compressed);
       if (result.error) {
@@ -229,7 +198,7 @@ export function HeroSlidesManager({
 
   const handleReplaceImage = async (index: number, file: File) => {
     toast.info(`Optimizing image...`);
-    const compressed = await compressImage(file);
+    const compressed = await compressImage(file, { maxDimension: 1920 });
 
     const result = await uploadHeroImage(compressed);
     if (result.error) {

@@ -1,7 +1,6 @@
 import canvasConfetti from "canvas-confetti";
 
 export function fireConfetti() {
-  const duration = 2000;
   const defaults = { startVelocity: 35, spread: 360, ticks: 60, zIndex: 9999 };
 
   const random = (min: number, max: number) => Math.random() * (max - min) + min;

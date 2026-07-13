@@ -170,6 +170,7 @@ export interface StoreInfo {
   email: string;
   phone: string;
   address: string;
+  whatsapp_number?: string;
 }
 
 export interface HeroSlide {

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
+import { logDeniedAccess } from "@/lib/audit";
 
 const PUBLIC_PATHS = [
   "/",
@@ -55,6 +56,10 @@ export async function updateSession(request: NextRequest) {
 
   // Only redirect to login for protected paths (account, admin) when not authenticated
   if (!user && !isPublicPath(request.nextUrl.pathname)) {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+    if (request.nextUrl.pathname.startsWith("/admin")) {
+      await logDeniedAccess(ip, request.nextUrl.pathname);
+    }
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);

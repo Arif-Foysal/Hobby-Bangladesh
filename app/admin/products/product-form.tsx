@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createProduct, updateProduct, uploadProductImage } from "./actions";
+import { compressImage } from "@/lib/image-compress";
 import { IconX, IconPhoto, IconPlus, IconTrash } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { Category, ProductImage, ProductFeature } from "@/lib/database/types";
@@ -104,12 +105,13 @@ export function ProductForm({
     const newImages: ProductImage[] = [];
 
     for (const file of Array.from(files)) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError(`${file.name} exceeds 5MB limit`);
+      if (file.size > 10 * 1024 * 1024) {
+        setError(`${file.name} exceeds 10MB limit`);
         continue;
       }
 
-      const result = await uploadProductImage(file, product?.id ?? "temp");
+      const compressed = await compressImage(file);
+      const result = await uploadProductImage(compressed, product?.id ?? "temp");
       if (result.error) {
         setError(result.error);
         toast.error(result.error);
@@ -130,7 +132,8 @@ export function ProductForm({
     if (!file) return;
 
     setHeroUploading(true);
-    const result = await uploadProductImage(file, product?.id ?? "temp");
+    const compressed = await compressImage(file, { maxDimension: 1920, targetSize: 900 * 1024 });
+    const result = await uploadProductImage(compressed, product?.id ?? "temp");
     if (result.error) {
       toast.error(result.error);
     } else if (result.url) {
@@ -530,7 +533,7 @@ export function ProductForm({
             </label>
           </div>
           <p className="text-xs text-muted-foreground">
-            JPEG, PNG, or WebP. Max 5MB per image.
+            JPEG, PNG, or WebP. Up to 10MB — images are automatically compressed.
           </p>
         </div>
 

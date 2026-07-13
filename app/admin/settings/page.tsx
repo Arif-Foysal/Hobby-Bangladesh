@@ -37,11 +37,12 @@ export default async function SettingsPage() {
         <TabsContent value="store" className="mt-4">
           <StoreInfoForm
             initialData={
-              (storeInfo as { name: string; email: string; phone: string; address: string }) ?? {
+              (storeInfo as { name: string; email: string; phone: string; address: string; whatsapp_number?: string }) ?? {
                 name: "",
                 email: "",
                 phone: "",
                 address: "",
+                whatsapp_number: "",
               }
             }
           />
