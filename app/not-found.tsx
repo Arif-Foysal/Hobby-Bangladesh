@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
+import { getStoreSetting } from "@/lib/supabase/store";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const branding = await getStoreSetting("branding");
+  const logoUrl = branding?.logo_url ?? null;
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto flex w-full max-w-7xl items-center px-4 py-4 lg:px-6">
-        <BrandLogo />
+        <BrandLogo logoUrl={logoUrl} />
       </header>
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
         <div className="flex size-20 items-center justify-center rounded-full bg-primary/10">

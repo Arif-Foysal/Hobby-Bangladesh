@@ -17,7 +17,7 @@ import { BrandLogo } from "./brand-logo";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-export function MobileNav() {
+export function MobileNav({ logoUrl }: { logoUrl?: string | null }) {
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -59,7 +59,7 @@ export function MobileNav() {
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>
-            <BrandLogo />
+            <BrandLogo logoUrl={logoUrl} />
           </SheetTitle>
         </SheetHeader>
         <nav className="mt-6 flex flex-col gap-1">

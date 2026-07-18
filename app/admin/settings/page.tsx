@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getHeroSlides } from "./actions";
+import { getHeroSlides, getBranding } from "./actions";
 import { getStoreSetting } from "@/lib/supabase/store";
 import { HeroSlidesManager } from "./hero-slides-manager";
+import { BrandingForm } from "./branding-form";
 import { StoreInfoForm } from "./store-info-form";
 import { CurrencyForm } from "./currency-form";
 import { AnalyticsForm } from "./analytics-form";
@@ -9,8 +10,9 @@ import { AnalyticsForm } from "./analytics-form";
 export const metadata = { title: "Settings | Admin | Hobby Bangladesh" };
 
 export default async function SettingsPage() {
-  const [heroSlides, storeInfo, currency, analytics] = await Promise.all([
+  const [heroSlides, branding, storeInfo, currency, analytics] = await Promise.all([
     getHeroSlides(),
+    getBranding(),
     getStoreSetting("store"),
     getStoreSetting("currency"),
     getStoreSetting("analytics"),
@@ -28,6 +30,7 @@ export default async function SettingsPage() {
       <Tabs defaultValue="hero" className="w-full">
         <TabsList>
           <TabsTrigger value="hero">Hero Slides</TabsTrigger>
+          <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="store">Store Info</TabsTrigger>
           <TabsTrigger value="currency">Currency</TabsTrigger>
           <TabsTrigger value="tracking">Tracking</TabsTrigger>
@@ -35,6 +38,10 @@ export default async function SettingsPage() {
 
         <TabsContent value="hero" className="mt-4">
           <HeroSlidesManager initialSlides={heroSlides} />
+        </TabsContent>
+
+        <TabsContent value="branding" className="mt-4">
+          <BrandingForm initialLogoUrl={branding?.logo_url ?? null} />
         </TabsContent>
 
         <TabsContent value="store" className="mt-4">

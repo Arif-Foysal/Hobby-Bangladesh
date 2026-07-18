@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrandLogo } from "@/components/brand-logo";
+import { getStoreSetting } from "@/lib/supabase/store";
 import { IconCircleCheck, IconPackage } from "@tabler/icons-react";
 
 export const metadata = {
@@ -17,12 +18,14 @@ export default async function CheckoutSuccessPage({
 }) {
   const params = await searchParams;
   const orderNumber = params.order;
+  const branding = await getStoreSetting("branding");
+  const logoUrl = branding?.logo_url ?? null;
 
   return (
     <div className="flex min-h-screen flex-col">
       <ConfettiOnMount />
       <header className="mx-auto flex w-full max-w-7xl items-center px-4 py-4 lg:px-6">
-        <BrandLogo />
+        <BrandLogo logoUrl={logoUrl} />
       </header>
       <div className="mx-auto flex max-w-lg flex-1 flex-col items-center justify-center gap-6 px-4 py-24 text-center">
         <IconCircleCheck className="size-16 text-success" />

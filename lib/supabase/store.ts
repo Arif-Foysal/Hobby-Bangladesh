@@ -5,6 +5,7 @@ import type {
   StoreShipping,
   StoreInfo,
   StoreAnalytics,
+  Branding,
   StoreSetting,
 } from "@/lib/database/types";
 
@@ -25,8 +26,9 @@ export async function getStoreSetting<K extends string>(
      : K extends "shipping" ? StoreShipping
      : K extends "store" ? StoreInfo
      : K extends "analytics" ? StoreAnalytics
+     : K extends "branding" ? Branding
      : Record<string, unknown> | null> {
-  if (settingCache.has(key)) {
+    if (settingCache.has(key)) {
     return settingCache.get(key) as never;
   }
 

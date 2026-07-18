@@ -20,8 +20,9 @@ import { BrandLogo } from "./brand-logo";
 
 export function LoginForm({
   className,
+  logoUrl,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: React.ComponentPropsWithoutRef<"div"> & { logoUrl?: string | null }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +53,7 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2">
-        <BrandLogo />
+        <BrandLogo logoUrl={logoUrl} />
         <p className="text-sm text-muted-foreground">
           Sign in to your Hobby BD account
         </p>

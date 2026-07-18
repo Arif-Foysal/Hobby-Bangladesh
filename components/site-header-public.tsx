@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getStoreSetting } from "@/lib/supabase/store";
 import { BrandLogo } from "./brand-logo";
 import { SiteThemeToggle } from "./site-theme-toggle";
 import { CartButton } from "./cart-button";
@@ -33,12 +34,15 @@ export async function SiteHeader() {
     cartCount = cartRes.count || 0;
   }
 
+  const branding = await getStoreSetting("branding");
+  const logoUrl = branding?.logo_url ?? null;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 lg:px-6">
-        <MobileNav />
+        <MobileNav logoUrl={logoUrl} />
 
-        <BrandLogo />
+        <BrandLogo logoUrl={logoUrl} />
 
         <nav className="hidden items-center gap-1 md:flex">
           <Link

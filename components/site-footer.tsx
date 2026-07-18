@@ -4,15 +4,19 @@ import { getStoreSetting } from "@/lib/supabase/store";
 import { BrandLogo } from "./brand-logo";
 
 export async function SiteFooter() {
-  const storeInfo = await getStoreSetting("store");
+  const [storeInfo, branding] = await Promise.all([
+    getStoreSetting("store"),
+    getStoreSetting("branding"),
+  ]);
   const storeName = storeInfo?.name ?? "Hobby Bangladesh";
+  const logoUrl = branding?.logo_url ?? null;
 
   return (
     <footer className="border-t bg-muted/50">
       <div className="mx-auto max-w-7xl px-4 py-12 lg:px-6">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <BrandLogo />
+            <BrandLogo logoUrl={logoUrl} />
             <p className="mt-2 text-sm text-muted-foreground">
               Hobby Bangladesh provides the best craft supplies in Bangladesh. Here, you can buy pre-made art materials like pre-marked MDF bases, wooden bases, kids room decor, home accessories, personalized lamps, Mirror, Lippon Art and much more.
             </p>

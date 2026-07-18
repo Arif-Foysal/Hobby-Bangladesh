@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/admin";
 import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
-import type { HeroSlide } from "@/lib/database/types";
+import type { HeroSlide, Branding } from "@/lib/database/types";
 import { emptyCache } from "@/lib/supabase/store";
 
 export async function getHeroSlides(): Promise<HeroSlide[]> {
@@ -17,6 +17,18 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
 
   if (!data?.value) return [];
   return (data.value as { slides: HeroSlide[] }).slides || [];
+}
+
+export async function getBranding(): Promise<Branding | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("store_settings")
+    .select("value")
+    .eq("key", "branding")
+    .single();
+
+  if (!data?.value) return null;
+  return data.value as Branding;
 }
 
 export async function saveHeroSlides(slides: HeroSlide[]) {
@@ -193,4 +205,63 @@ export async function saveAnalytics(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin/settings");
   return { success: true };
+}
+
+export async function saveBranding(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const logoUrl = (formData.get("logo_url") as string) || null;
+  const value: Branding = { logo_url: logoUrl };
+
+  const { data: existing } = await supabase
+    .from("store_settings")
+    .select("id")
+    .eq("key", "branding")
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("store_settings")
+      .update({ value })
+      .eq("key", "branding");
+  } else {
+    await supabase
+      .from("store_settings")
+      .insert({ key: "branding", value });
+  }
+
+  emptyCache();
+
+  await logAdminAction({
+    action: "update",
+    resourceType: "settings",
+    details: { key: "branding", has_logo: !!value.logo_url },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/auth/login");
+  revalidatePath("/auth/sign-up");
+  revalidatePath("/admin/settings");
+  return { success: true };
+}
+
+export async function uploadLogoImage(file: File) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const ext = file.name.split(".").pop();
+  const path = `branding/logo_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("hobby-bangladesh")
+    .upload(path, file, { contentType: file.type, upsert: false });
+
+  if (error) return { error: error.message };
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("hobby-bangladesh").getPublicUrl(path);
+
+  return { url: publicUrl };
 }
