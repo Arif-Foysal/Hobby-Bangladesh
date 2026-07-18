@@ -1,9 +1,12 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin-client";
 import { requireAdmin } from "@/lib/supabase/admin";
 import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
+import { getStoreSetting } from "@/lib/supabase/store";
+import type { InvoiceData } from "@/lib/database/types";
 
 export async function getAllOrders() {
   await requireAdmin();
@@ -129,16 +132,27 @@ export async function getOrder(orderId: string) {
   }
 
   if (order.user_id) {
+    // profiles has no email column — select only existing columns.
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, phone, email")
+      .select("name, phone")
       .eq("id", order.user_id)
       .single();
 
-    return { ...order, profiles: profile ?? null };
+    // Fetch the verified account email from auth.users via the admin client.
+    let customerEmail: string | null = null;
+    try {
+      const admin = createAdminClient();
+      const { data } = await admin.auth.admin.getUserById(order.user_id);
+      customerEmail = data?.user?.email ?? null;
+    } catch {
+      // service role key may be missing in dev — fall back to shipping address email
+    }
+
+    return { ...order, profiles: profile ?? null, customerEmail };
   }
 
-  return { ...order, profiles: null };
+  return { ...order, profiles: null, customerEmail: null };
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
@@ -203,4 +217,105 @@ export async function addOrderNote(orderId: string, note: string) {
   if (error) return { error: error.message };
   revalidatePath(`/admin/orders/${orderId}`);
   return { success: true };
+}
+
+export async function getInvoiceData(orderId: string): Promise<InvoiceData | null> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("*, order_items(*)")
+    .eq("id", orderId)
+    .single();
+
+  if (orderError || !order) return null;
+
+  const [storeInfo, currency, tax, branding, profileData] = await Promise.all([
+    getStoreSetting("store"),
+    getStoreSetting("currency"),
+    getStoreSetting("tax"),
+    getStoreSetting("branding"),
+    order.user_id
+      ? supabase.from("profiles").select("name, phone").eq("id", order.user_id).single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  let customerEmail: string | null = null;
+  if (order.user_id) {
+    try {
+      const admin = createAdminClient();
+      const { data } = await admin.auth.admin.getUserById(order.user_id);
+      customerEmail = data?.user?.email ?? null;
+    } catch {
+      // fall back to shipping_address.email
+    }
+  }
+
+  const addr = (order.shipping_address ?? {}) as {
+    name?: string; email?: string; phone?: string;
+    division?: string; city?: string; area?: string; address?: string;
+  };
+
+  await logAdminAction({
+    action: "print_invoice",
+    resourceType: "order",
+    resourceId: orderId,
+    details: { order_number: order.order_number },
+  });
+
+  return {
+    order: {
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status,
+      created_at: order.created_at,
+      subtotal: order.subtotal,
+      shipping_cost: order.shipping_cost,
+      discount: order.discount,
+      total: order.total,
+      payment_method: order.payment_method,
+      payment_status: order.payment_status,
+      transaction_id: order.transaction_id,
+      coupon_code: order.coupon_code,
+      notes: order.notes,
+      shipping_address: {
+        name: addr.name ?? "",
+        email: addr.email,
+        phone: addr.phone ?? "",
+        division: addr.division ?? "",
+        city: addr.city ?? "",
+        area: addr.area ?? "",
+        address: addr.address ?? "",
+      },
+    },
+    items: order.order_items.map((item: { id: string; product_name: string; quantity: number; unit_price: number; total: number }) => ({
+      id: item.id,
+      product_name: item.product_name,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      total: item.total,
+    })),
+    customer: {
+      name: profileData?.data?.name ?? addr.name ?? null,
+      email: customerEmail ?? addr.email ?? null,
+      phone: profileData?.data?.phone ?? addr.phone ?? null,
+      is_guest: !order.user_id,
+    },
+    store: {
+      name: storeInfo?.name ?? "Hobby Bangladesh",
+      email: storeInfo?.email ?? null,
+      phone: storeInfo?.phone ?? null,
+      address: storeInfo?.address ?? null,
+      whatsapp_number: storeInfo?.whatsapp_number,
+      logo_url: branding?.logo_url ?? null,
+      tax_label: tax?.label ?? null,
+      tax_rate: tax?.rate ?? 0,
+    },
+    currency: {
+      code: currency?.code ?? "BDT",
+      symbol: currency?.symbol ?? "৳",
+      position: currency?.position ?? "before",
+    },
+  };
 }

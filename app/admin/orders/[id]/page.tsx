@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrder } from "../actions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -14,6 +16,8 @@ import {
 import { StatusUpdateForm } from "./status-form";
 import { PaymentStatusForm } from "./payment-form";
 import { OrderNoteForm } from "./note-form";
+import { IconPrinter } from "@tabler/icons-react";
+import type { ShippingAddress } from "@/lib/database/types";
 
 export const metadata = { title: "Order Detail | Admin | Hobby Bangladesh" };
 
@@ -28,14 +32,11 @@ export default async function AdminOrderDetailPage({
   const order = await getOrder(id);
   if (!order) notFound();
 
-  const addr = order.shipping_address as {
-    name: string;
-    phone: string;
-    division: string;
-    city: string;
-    area: string;
-    address: string;
-  };
+  const addr = (order.shipping_address ?? {}) as Partial<ShippingAddress>;
+  const isGuest = !order.user_id;
+  const customerName = order.profiles?.name ?? addr.name ?? "—";
+  const customerPhone = order.profiles?.phone ?? addr.phone ?? null;
+  const customerEmail = order.customerEmail ?? addr.email ?? null;
 
   return (
     <div className="flex flex-col gap-6 px-4 lg:px-6">
@@ -46,19 +47,29 @@ export default async function AdminOrderDetailPage({
             Placed on {new Date(order.created_at).toLocaleDateString("en-BD")}
           </p>
         </div>
-        <Badge>{order.status}</Badge>
+        <div className="flex items-center gap-2">
+          {isGuest && <Badge variant="secondary">Guest order</Badge>}
+          <Badge>{order.status}</Badge>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/invoice/${order.id}`} target="_blank" rel="noopener">
+              <IconPrinter className="size-4" />
+              Print Invoice
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Customer</CardTitle>
+            <CardTitle className="text-sm">
+              Customer{isGuest && " (guest)"}
+            </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">
-              {order.profiles?.name ?? "—"}
-            </p>
-            <p>{order.profiles?.phone}</p>
+          <CardContent className="space-y-1 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">{customerName}</p>
+            {customerPhone && <p>{customerPhone}</p>}
+            {customerEmail && <p>{customerEmail}</p>}
           </CardContent>
         </Card>
 
@@ -66,13 +77,16 @@ export default async function AdminOrderDetailPage({
           <CardHeader>
             <CardTitle className="text-sm">Shipping Address</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <p>{addr.name}</p>
-            <p>{addr.address}</p>
-            <p>
-              {addr.area}, {addr.city}, {addr.division}
-            </p>
-            <p>{addr.phone}</p>
+          <CardContent className="space-y-1 text-sm text-muted-foreground">
+            {addr.name && <p className="font-medium text-foreground">{addr.name}</p>}
+            {addr.address && <p>{addr.address}</p>}
+            {(addr.area || addr.city || addr.division) && (
+              <p>
+                {[addr.area, addr.city, addr.division].filter(Boolean).join(", ")}
+              </p>
+            )}
+            {addr.phone && <p>{addr.phone}</p>}
+            {addr.email && <p>{addr.email}</p>}
           </CardContent>
         </Card>
 
@@ -138,6 +152,19 @@ export default async function AdminOrderDetailPage({
               <span className="text-muted-foreground">Shipping</span>
               <span>{order.shipping_cost === 0 ? "Free" : `৳ ${order.shipping_cost}`}</span>
             </div>
+            {order.discount > 0 && (
+              <div className="flex justify-between text-primary">
+                <span className="flex items-center gap-2">
+                  Discount
+                  {order.coupon_code && (
+                    <Badge variant="secondary" className="font-mono">
+                      {order.coupon_code}
+                    </Badge>
+                  )}
+                </span>
+                <span>− ৳ {order.discount.toLocaleString()}</span>
+              </div>
+            )}
             <Separator />
             <div className="flex justify-between font-semibold">
               <span>Total</span>

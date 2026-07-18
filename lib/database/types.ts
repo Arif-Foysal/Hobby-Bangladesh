@@ -87,6 +87,7 @@ export interface CartWithProduct extends Cart {
 
 export interface ShippingAddress {
   name: string;
+  email?: string;
   phone: string;
   division: string;
   city: string;
@@ -96,7 +97,7 @@ export interface ShippingAddress {
 
 export interface Order {
   id: string;
-  user_id: string;
+  user_id: string | null;
   order_number: string;
   status: OrderStatus;
   subtotal: number;
@@ -107,6 +108,8 @@ export interface Order {
   payment_method: string;
   payment_status: PaymentStatus;
   transaction_id: string | null;
+  coupon_id: string | null;
+  coupon_code: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -190,6 +193,57 @@ export interface StoreAnalytics {
   gtm_container_id?: string;
 }
 
+export interface Branding {
+  logo_url: string | null;
+}
+
+export interface InvoiceData {
+  order: {
+    id: string;
+    order_number: string;
+    status: OrderStatus;
+    created_at: string;
+    subtotal: number;
+    shipping_cost: number;
+    discount: number;
+    total: number;
+    payment_method: string;
+    payment_status: PaymentStatus;
+    transaction_id: string | null;
+    coupon_code: string | null;
+    notes: string | null;
+    shipping_address: ShippingAddress;
+  };
+  items: {
+    id: string;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    total: number;
+  }[];
+  customer: {
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    is_guest: boolean;
+  };
+  store: {
+    name: string;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    whatsapp_number?: string;
+    logo_url: string | null;
+    tax_label: string | null;
+    tax_rate: number;
+  };
+  currency: {
+    code: string;
+    symbol: string;
+    position: "before" | "after";
+  };
+}
+
 export interface StoreSetting {
   id: string;
   key: string;
@@ -199,7 +253,8 @@ export interface StoreSetting {
     | StoreShipping
     | StoreInfo
     | HeroSlidesConfig
-    | StoreAnalytics;
+    | StoreAnalytics
+    | Branding;
 }
 
 export interface Coupon {
