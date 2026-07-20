@@ -7,6 +7,7 @@ import { getGuestCart } from "@/lib/cart";
 import { createClient } from "@/lib/supabase/client";
 import { CheckoutForm } from "./checkout-form";
 import { IconShoppingBag } from "@tabler/icons-react";
+import type { StoreShipping, Location } from "@/lib/database/types";
 
 interface CheckoutCartItem {
   productId: string;
@@ -20,14 +21,12 @@ export function CheckoutContent({
   initialItems,
   isGuest,
   shipping,
+  divisions,
 }: {
   initialItems: CheckoutCartItem[];
   isGuest: boolean;
-  shipping: {
-    inside_dhaka: number;
-    outside_dhaka: number;
-    free_shipping_min: number;
-  } | null;
+  shipping: StoreShipping | null;
+  divisions: Location[];
 }) {
   const [guestItems, setGuestItems] = useState<CheckoutCartItem[]>([]);
   const [guestLoaded, setGuestLoaded] = useState(false);
@@ -97,5 +96,11 @@ export function CheckoutContent({
     );
   }
 
-  return <CheckoutForm cartItems={cartItems} shipping={shipping} />;
+  return (
+    <CheckoutForm
+      cartItems={cartItems}
+      shipping={shipping}
+      divisions={divisions}
+    />
+  );
 }

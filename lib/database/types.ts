@@ -163,8 +163,18 @@ export interface StoreTax {
 }
 
 export interface StoreShipping {
+  /**
+   * Default delivery charge for orders inside Dhaka (fallback when a
+   * location row isn't matched in the `locations` table).
+   */
   inside_dhaka: number;
+  /**
+   * Default delivery charge for orders outside Dhaka (fallback).
+   */
   outside_dhaka: number;
+  /**
+   * Subtotal threshold at which shipping becomes free.
+   */
   free_shipping_min: number;
 }
 
@@ -195,6 +205,20 @@ export interface StoreAnalytics {
 
 export interface Branding {
   logo_url: string | null;
+}
+
+export type LocationType = "division" | "city" | "area";
+
+export interface Location {
+  id: string;
+  name: string;
+  type: LocationType;
+  parent_id: string | null;
+  delivery_charge: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface InvoiceData {

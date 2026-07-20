@@ -29,17 +29,7 @@ import {
   IconCheck,
   IconPhotoOff,
 } from "@tabler/icons-react";
-
-const divisions = [
-  "Dhaka",
-  "Chattogram",
-  "Rajshahi",
-  "Khulna",
-  "Barishal",
-  "Sylhet",
-  "Rangpur",
-  "Mymensingh",
-];
+import type { StoreShipping, Location } from "@/lib/database/types";
 
 interface CartItem {
   productId: string;
@@ -60,13 +50,11 @@ interface AppliedCoupon {
 export function CheckoutForm({
   cartItems,
   shipping,
+  divisions,
 }: {
   cartItems: CartItem[];
-  shipping: {
-    inside_dhaka: number;
-    outside_dhaka: number;
-    free_shipping_min: number;
-  } | null;
+  shipping: StoreShipping | null;
+  divisions: Location[];
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -80,14 +68,25 @@ export function CheckoutForm({
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
+  // Selected division drives the per-location delivery charge.
+  const [selectedDivision, setSelectedDivision] = useState<string>("");
+
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  // Resolve delivery charge: location-specific → fallback to inside/outside default.
+  const selectedLocation = divisions.find(
+    (d) => d.name.toLowerCase() === selectedDivision.toLowerCase()
+  );
+  const isInsideDhaka = selectedDivision.toLowerCase() === "dhaka";
+  const defaultCharge = isInsideDhaka
+    ? (shipping?.inside_dhaka ?? 60)
+    : (shipping?.outside_dhaka ?? 100);
+  const baseCharge = selectedLocation?.delivery_charge ?? defaultCharge;
   const shippingCost =
-    shipping && subtotal >= shipping.free_shipping_min
-      ? 0
-      : shipping?.inside_dhaka ?? 60;
+    shipping && subtotal >= shipping.free_shipping_min ? 0 : baseCharge;
   const discount = appliedCoupon?.discount ?? 0;
   const total = Math.max(0, subtotal + shippingCost - discount);
 
@@ -229,20 +228,33 @@ export function CheckoutForm({
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label>Division</Label>
-                <Select name="division" required>
+                <Select
+                  name="division"
+                  required
+                  value={selectedDivision}
+                  onValueChange={setSelectedDivision}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select division" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
                       {divisions.map((d) => (
-                        <SelectItem key={d} value={d}>
-                          {d}
+                        <SelectItem key={d.id} value={d.name}>
+                          {d.name}
                         </SelectItem>
                       ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+                {selectedDivision && (
+                  <p className="text-xs text-muted-foreground">
+                    Delivery charge for {selectedDivision}: ৳ {baseCharge.toLocaleString()}
+                    {shipping && subtotal >= shipping.free_shipping_min && (
+                      <span className="font-medium text-success"> (free — over threshold)</span>
+                    )}
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="city">City</Label>

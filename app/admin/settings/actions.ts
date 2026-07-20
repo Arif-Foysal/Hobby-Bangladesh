@@ -207,6 +207,54 @@ export async function saveAnalytics(formData: FormData) {
   return { success: true };
 }
 
+export async function saveShipping(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const value = {
+    inside_dhaka: parseFloat(formData.get("inside_dhaka") as string) || 0,
+    outside_dhaka: parseFloat(formData.get("outside_dhaka") as string) || 0,
+    free_shipping_min:
+      parseFloat(formData.get("free_shipping_min") as string) || 0,
+  };
+
+  const { data: existing } = await supabase
+    .from("store_settings")
+    .select("id")
+    .eq("key", "shipping")
+    .single();
+
+  if (existing) {
+    await supabase
+      .from("store_settings")
+      .update({ value })
+      .eq("key", "shipping");
+  } else {
+    await supabase
+      .from("store_settings")
+      .insert({ key: "shipping", value });
+  }
+
+  emptyCache();
+
+  await logAdminAction({
+    action: "update",
+    resourceType: "settings",
+    details: {
+      key: "shipping",
+      inside_dhaka: value.inside_dhaka,
+      outside_dhaka: value.outside_dhaka,
+      free_shipping_min: value.free_shipping_min,
+    },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/cart");
+  revalidatePath("/checkout");
+  revalidatePath("/admin/settings");
+  return { success: true };
+}
+
 export async function saveBranding(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin-client";
 import { revalidatePath } from "next/cache";
 import { getStoreSetting } from "@/lib/supabase/store";
+import { findLocationByName } from "@/app/admin/locations/actions";
 
 export async function validateCoupon(code: string, subtotal: number) {
   const supabase = await createClient();
@@ -111,10 +112,19 @@ export async function createOrder(formData: FormData) {
     const product = productMap.get(item.productId);
     return sum + (product?.price ?? 0) * item.quantity;
   }, 0);
+
+  // Resolve per-location delivery charge from the selected division.
+  // Falls back to the store's shipping defaults when no matching location row.
+  const location = division ? await findLocationByName(division, "division") : null;
+  const isInsideDhaka = !!division && division.toLowerCase() === "dhaka";
+  const defaultCharge = isInsideDhaka
+    ? (shippingConfig?.inside_dhaka ?? 60)
+    : (shippingConfig?.outside_dhaka ?? 100);
+  const baseCharge = location?.delivery_charge ?? defaultCharge;
   const shippingCost =
     shippingConfig && subtotal >= (shippingConfig.free_shipping_min ?? 5000)
       ? 0
-      : shippingConfig?.inside_dhaka ?? 60;
+      : baseCharge;
 
   let finalDiscount = 0;
   if (couponId && couponCode && discountAmount > 0) {

@@ -20,7 +20,7 @@ import {
   IconShoppingBag,
   IconPhotoOff,
 } from "@tabler/icons-react";
-import type { ShippingSettings } from "./page";
+import type { StoreShipping as ShippingSettings } from "@/lib/database/types";
 
 interface CartProduct {
   id: string;
@@ -343,11 +343,19 @@ export function CartPageContent({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>{shippingCost === 0 ? "Free" : `৳ ${shippingCost}`}</span>
+                <span>
+                  {shippingCost === 0 ? "Free" : `৳ ${shippingCost}`}
+                  {shippingCost > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      (inside Dhaka)
+                    </span>
+                  )}
+                </span>
               </div>
               {shippingCost > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Free shipping on orders over ৳ {freeShippingMin.toLocaleString()}
+                  Final charge calculated at checkout based on your location.
+                  Free shipping on orders over ৳ {freeShippingMin.toLocaleString()}.
                 </p>
               )}
               <Separator />

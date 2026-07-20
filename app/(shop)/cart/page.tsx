@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCart } from "@/app/cart/actions";
 import { getStoreSetting } from "@/lib/supabase/store";
 import { CartPageContent } from "./cart-content";
+import type { StoreShipping } from "@/lib/database/types";
 
 export const metadata = {
   title: "Cart | Hobby Bangladesh",
@@ -20,12 +21,6 @@ export interface CartItem {
   } | null;
 }
 
-export interface ShippingSettings {
-  inside_dhaka: number;
-  outside_dhaka: number;
-  free_shipping_min: number;
-}
-
 export default async function CartPage() {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getClaims();
@@ -36,7 +31,7 @@ export default async function CartPage() {
     cartItems = (await getCart()) as CartItem[];
   }
 
-  const shipping = await getStoreSetting("shipping") as ShippingSettings | null;
+  const shipping = await getStoreSetting("shipping") as StoreShipping | null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-6">

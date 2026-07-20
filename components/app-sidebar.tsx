@@ -12,6 +12,7 @@ import {
   IconInnerShadowTop,
   IconTicket,
   IconClipboardList,
+  IconCurrentLocation,
 } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -34,6 +35,7 @@ const navMain = [
   { title: "Coupons", url: "/admin/coupons", icon: IconTicket },
   { title: "Reviews", url: "/admin/reviews", icon: IconStar },
   { title: "Customers", url: "/admin/customers", icon: IconUsers },
+  { title: "Locations", url: "/admin/locations", icon: IconCurrentLocation },
 ];
 
 const navSecondary = [

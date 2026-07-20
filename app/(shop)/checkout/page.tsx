@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCart } from "@/app/cart/actions";
 import { getStoreSetting } from "@/lib/supabase/store";
+import { getActiveDivisions } from "@/app/admin/locations/actions";
 import { CheckoutContent } from "./checkout-content";
+import type { StoreShipping } from "@/lib/database/types";
 
 export const metadata = {
   title: "Checkout | Hobby Bangladesh",
@@ -20,11 +22,10 @@ export default async function CheckoutPage() {
   const { data: authData } = await supabase.auth.getClaims();
   const isLoggedIn = !!authData?.claims;
 
-  const shipping = (await getStoreSetting("shipping")) as {
-    inside_dhaka: number;
-    outside_dhaka: number;
-    free_shipping_min: number;
-  } | null;
+  const [shipping, divisions] = await Promise.all([
+    getStoreSetting("shipping") as Promise<StoreShipping | null>,
+    getActiveDivisions(),
+  ]);
 
   let cartItems: CheckoutCartItem[] = [];
 
@@ -52,6 +53,7 @@ export default async function CheckoutPage() {
           initialItems={cartItems}
           isGuest={!isLoggedIn}
           shipping={shipping}
+          divisions={divisions}
         />
       </div>
     </div>

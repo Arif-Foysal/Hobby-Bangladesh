@@ -5,16 +5,18 @@ import { HeroSlidesManager } from "./hero-slides-manager";
 import { BrandingForm } from "./branding-form";
 import { StoreInfoForm } from "./store-info-form";
 import { CurrencyForm } from "./currency-form";
+import { ShippingForm } from "./shipping-form";
 import { AnalyticsForm } from "./analytics-form";
 
 export const metadata = { title: "Settings | Admin | Hobby Bangladesh" };
 
 export default async function SettingsPage() {
-  const [heroSlides, branding, storeInfo, currency, analytics] = await Promise.all([
+  const [heroSlides, branding, storeInfo, currency, shipping, analytics] = await Promise.all([
     getHeroSlides(),
     getBranding(),
     getStoreSetting("store"),
     getStoreSetting("currency"),
+    getStoreSetting("shipping"),
     getStoreSetting("analytics"),
   ]);
 
@@ -33,6 +35,7 @@ export default async function SettingsPage() {
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="store">Store Info</TabsTrigger>
           <TabsTrigger value="currency">Currency</TabsTrigger>
+          <TabsTrigger value="shipping">Shipping</TabsTrigger>
           <TabsTrigger value="tracking">Tracking</TabsTrigger>
         </TabsList>
 
@@ -65,6 +68,22 @@ export default async function SettingsPage() {
                 code: "BDT",
                 symbol: "৳",
                 position: "before",
+              }
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="shipping" className="mt-4">
+          <ShippingForm
+            initialData={
+              (shipping as {
+                inside_dhaka: number;
+                outside_dhaka: number;
+                free_shipping_min: number;
+              }) ?? {
+                inside_dhaka: 60,
+                outside_dhaka: 100,
+                free_shipping_min: 5000,
               }
             }
           />
